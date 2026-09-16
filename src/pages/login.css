@@ -1,10 +1,50 @@
+/* ==========================================================================
+   login.css — Acceso (Sprint 2)
+   Pantalla suelta, sin el marco de la app: solo la marca y el formulario.
+   ========================================================================== */
+
+.login {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px 20px;
+  background: var(--bg);
+}
+
+.login__caja {
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 24px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--sombra);
+}
+
+.login__brand {
+  font-size: 19px;
+}
+
 .login__title {
-  font-size: 22px;
-  margin: 4px 0 20px;
+  font-size: 26px;
+  margin: 16px 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.login__intro {
+  margin: 0 0 22px;
+  font-size: 14px;
+  color: var(--ink-2);
+  max-width: 34ch;
 }
 
 .login__form {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.login__demo {
+  display: block;
+  margin: 16px auto 0;
 }

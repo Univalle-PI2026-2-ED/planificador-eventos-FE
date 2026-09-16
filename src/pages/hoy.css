@@ -1,138 +1,276 @@
+/* ==========================================================================
+   hoy.css — Vista "Hoy" (T2)
+   Idea rectora: la agenda es un renglón. Una línea vertical recorre el día;
+   cada gestión cuelga de ella y su marcador cambia de color según urgencia,
+   así la jerarquía se lee sin tener que leer las etiquetas.
+   ========================================================================== */
+
 .hoy__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin: 4px 0 20px;
+  gap: 14px;
+  margin-bottom: 4px;
 }
 
 .hoy__title {
-  font-size: 26px;
-  margin: 0;
+  font-size: 30px;
   letter-spacing: -0.02em;
 }
 
+.hoy__sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
 .btn--accion {
-  margin-top: 0;
+  flex: none;
+  margin-top: 4px;
+}
+
+/* --- Carga del día (enlaza con el límite de horas de T3) --------------- */
+
+.carga {
+  display: grid;
+  gap: 7px;
+  margin: 18px 0 22px;
+}
+
+.carga__datos {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
   font-size: 13px;
-  padding: 8px 14px;
-  white-space: nowrap;
+  color: var(--ink-2);
 }
 
-.hoy__hint {
-  color: #8a8579;
-  font-size: 14px;
-}
-
-.state {
-  border-radius: var(--radius);
-  padding: 24px 18px;
-  text-align: center;
-}
-
-.state--vacio {
-  background: var(--paper-dim);
-  border: 1px dashed var(--line);
-}
-
-.state--error {
-  background: var(--err-bg);
-  color: var(--err);
-}
-
-.state--error button {
-  margin-top: 10px;
-  border: 1px solid var(--err);
-  background: transparent;
-  color: var(--err);
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn {
-  display: inline-block;
-  margin-top: 12px;
-  background: var(--accent);
-  color: #2b1a04;
-  text-decoration: none;
-  padding: 9px 16px;
-  border-radius: 8px;
+.carga__horas {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
   font-weight: 600;
-  font-size: 14px;
 }
+
+.carga__barra {
+  position: relative;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+}
+
+.carga__relleno {
+  height: 100%;
+  width: var(--pct, 0%);
+  max-width: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transition: width var(--t-lento), background var(--t);
+}
+
+/* Marca del límite diario que definió la persona usuaria */
+.carga__limite {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: var(--limite, 100%);
+  width: 1px;
+  background: var(--ink-2);
+}
+
+.carga--excedida .carga__relleno {
+  background: var(--err);
+}
+
+.carga--excedida .carga__horas {
+  color: var(--err);
+}
+
+/* --- Lista y renglón de gestión --------------------------------------- */
 
 .lista-eventos {
   list-style: none;
-  margin: 0;
+  margin: 0 -10px;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .evento {
-  display: flex;
-  gap: 12px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  grid-template-areas:
+    "hora titulo etiqueta"
+    "hora meta   meta";
+  column-gap: 26px;
+  row-gap: 2px;
   align-items: baseline;
-  text-decoration: none;
+  padding: 12px 10px;
+  border-radius: var(--radius-sm);
   color: var(--ink);
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 14px 16px;
+  text-decoration: none;
+  transition: background var(--t);
+}
+
+/* Tramo de la línea del día */
+.evento::after {
+  content: "";
+  position: absolute;
+  left: 65px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+
+/* Marcador sobre la línea */
+.evento::before {
+  content: "";
+  position: absolute;
+  left: 61px;
+  top: 18px;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  border: 1px solid var(--line-fuerte);
+  background: var(--paper);
+  transition: background var(--t), border-color var(--t), scale var(--t);
+}
+
+.lista-eventos > li:first-child .evento::after {
+  top: 14px;
+}
+
+.lista-eventos > li:last-child .evento::after {
+  bottom: 14px;
+}
+
+.evento:hover,
+.evento:focus-visible {
+  background: var(--paper-2);
+}
+
+.evento:hover::before {
+  scale: 1.25;
 }
 
 .evento__hora {
-  font-size: 12px;
-  color: #8a8579;
-  min-width: 44px;
+  grid-area: hora;
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  letter-spacing: 0.01em;
 }
 
 .evento__titulo {
-  font-size: 15px;
+  grid-area: titulo;
+  font-size: 15.5px;
   font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.evento__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.evento__meta .num {
+  color: var(--ink-2);
+}
+
+.evento .etiqueta {
+  grid-area: etiqueta;
+}
+
+/* --- Estados del renglón ---------------------------------------------- */
+
+.evento--vencido {
+  background: var(--err-bg);
+}
+
+.evento--vencido::before {
+  background: var(--err);
+  border-color: var(--err);
+}
+
+.evento--vencido::after {
+  background: var(--err-line);
+}
+
+.evento--vencido:hover {
+  background: color-mix(in srgb, var(--err-bg) 70%, var(--paper-2));
+}
+
+.evento--urgente {
+  background: var(--accent-bg);
+}
+
+.evento--urgente::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.evento--urgente::after {
+  background: var(--accent-line);
 }
 
 .evento--hecho {
-  opacity: 0.5;
+  color: var(--ink-3);
+}
+
+.evento--hecho::before {
+  background: var(--ok);
+  border-color: var(--ok);
 }
 
 .evento--hecho .evento__titulo {
   text-decoration: line-through;
+  text-decoration-color: var(--ink-3);
+  font-weight: 400;
 }
 
-.evento--vencido {
-  border-color: var(--err);
-  background: var(--err-bg);
+.evento--pospuesto .evento__titulo {
+  font-style: italic;
 }
 
-.evento--urgente {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+/* --- Esqueleto de carga ------------------------------------------------ */
+
+.lista-eventos--cargando {
+  display: grid;
+  gap: 4px;
 }
 
-.etiqueta {
-  margin-left: auto;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 999px;
-  white-space: nowrap;
+.skeleton-fila {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  column-gap: 18px;
+  align-items: center;
+  padding: 14px 10px;
 }
 
-.etiqueta--vencido {
-  background: var(--err);
-  color: white;
+.skeleton-fila .skeleton:first-child {
+  height: 10px;
 }
 
-.etiqueta--urgente {
-  background: var(--accent);
-  color: #2b1a04;
+.skeleton-fila .skeleton:last-child {
+  height: 14px;
+  width: var(--w, 70%);
 }
 
-.etiqueta--proximo {
-  background: var(--paper-dim);
-  color: #736f64;
-  border: 1px solid var(--line);
+/* --- Pie de la vista --------------------------------------------------- */
+
+.hoy__pie {
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
 }

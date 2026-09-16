@@ -1,24 +1,158 @@
-.progreso h1 {
-  font-size: 22px;
-  margin: 4px 0 20px;
+/* ==========================================================================
+   progreso.css — Vista "/progreso" (T4)
+   La barra es segmentada: un tramo por gestión. Se ve el porcentaje y
+   también cuántas gestiones faltan, que es lo que la persona decide.
+   ========================================================================== */
+
+.progreso__title {
+  font-size: 28px;
+  margin-bottom: 4px;
 }
 
-.barra {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--paper-dim);
+.progreso__intro {
+  margin: 0 0 22px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+/* --- Tarjeta de avance por evento -------------------------------------- */
+
+.avance {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
   border: 1px solid var(--line);
-  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--paper-dim);
+  margin-bottom: 12px;
 }
 
-.barra__relleno {
-  height: 100%;
-  background: var(--ok);
-  transition: width 0.3s ease;
+.avance > .btn {
+  justify-self: start;
 }
 
-.progreso__texto {
-  margin-top: 10px;
+.avance__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.avance__nombre {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.avance__fecha {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.avance__cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.avance__pct {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.avance__detalle {
   font-size: 13px;
-  color: #55524a;
+  color: var(--ink-2);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.leyenda__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leyenda__muestra {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  border: 1px solid var(--line-fuerte);
+  background: var(--paper-2);
+}
+
+.leyenda__muestra--hecho {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+
+.leyenda__muestra--vencido {
+  background: var(--err-bg);
+  border-color: var(--err);
+}
+
+/* --- Bitácora del día --------------------------------------------------- */
+
+.bitacora {
+  margin-top: 26px;
+}
+
+.bitacora__titulo {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+}
+
+.bitacora__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.hito {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+}
+
+.hito:last-child {
+  border-bottom: 0;
+}
+
+.hito__hora {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.hito__texto {
+  color: var(--ink-2);
+}
+
+.hito__texto strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.bitacora__vacio {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  padding: 8px 0;
 }

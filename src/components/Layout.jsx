@@ -1,4 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEventos } from '../context/EventosContext.jsx'
+import { fechaLarga, hoyISO } from '../lib/fechas.js'
 import './layout.css'
 
 const TABS = [
@@ -8,20 +10,23 @@ const TABS = [
 ]
 
 export default function Layout() {
+  const { gestionesDelDia } = useEventos()
+  const pendientes = gestionesDelDia(hoyISO()).filter((g) => g.estado !== 'hecho').length
+
   return (
     <div className="shell">
+      <a className="saltar" href="#contenido">Saltar al contenido</a>
+
       <header className="topbar">
-        <span className="brand">hoy</span>
-        <span className="mono date">
-          {new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </span>
+        <Link to="/hoy" className="brand">hoy</Link>
+        <p className="date">{fechaLarga(hoyISO())}</p>
       </header>
 
-      <main className="content">
+      <main className="content" id="contenido" tabIndex={-1}>
         <Outlet />
       </main>
 
-      <nav className="tabbar">
+      <nav className="tabbar" aria-label="Secciones de la aplicación">
         {TABS.map((t) => (
           <NavLink
             key={t.to}
@@ -29,6 +34,12 @@ export default function Layout() {
             className={({ isActive }) => 'tab' + (isActive ? ' tab--active' : '')}
           >
             {t.label}
+            {t.to === '/hoy' && pendientes > 0 && (
+              <span className="tab__contador">
+                {pendientes}
+                <span className="sr-only"> gestiones pendientes</span>
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
