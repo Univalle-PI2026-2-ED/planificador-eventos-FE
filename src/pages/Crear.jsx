@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useEventos } from '../context/EventosContext.jsx'
 import './crear.css'
 
 export default function Crear() {
   const navigate = useNavigate()
+  const { agregarEvento } = useEventos()
   const [titulo, setTitulo] = useState('')
   const [hora, setHora] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
-    // TODO: POST a la API real (Backend). Por ahora solo navega de vuelta.
-    console.log('Crear evento:', { titulo, hora })
+    // TODO: cuando exista la API, reemplazar por un POST y esperar la respuesta
+    // antes de navegar (y manejar el caso de error).
+    agregarEvento({ titulo, hora })
     navigate('/hoy')
   }
 

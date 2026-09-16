@@ -1,10 +1,11 @@
+import { useEventos } from '../context/EventosContext.jsx'
 import './progreso.css'
 
-// TODO: reemplazar por datos reales de la API.
-const RESUMEN = { hechos: 1, total: 3 }
-
 export default function Progreso() {
-  const porcentaje = Math.round((RESUMEN.hechos / RESUMEN.total) * 100)
+  const { eventos } = useEventos()
+  const total = eventos.length
+  const hechos = eventos.filter((ev) => ev.hecho).length
+  const porcentaje = total === 0 ? 0 : Math.round((hechos / total) * 100)
 
   return (
     <div className="progreso">
@@ -13,7 +14,9 @@ export default function Progreso() {
         <div className="barra__relleno" style={{ width: `${porcentaje}%` }} />
       </div>
       <p className="mono progreso__texto">
-        {RESUMEN.hechos} de {RESUMEN.total} eventos completados ({porcentaje}%)
+        {total === 0
+          ? 'Todavía no tienes eventos hoy.'
+          : `${hechos} de ${total} eventos completados (${porcentaje}%)`}
       </p>
     </div>
   )

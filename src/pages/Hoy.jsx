@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useEventos } from '../context/EventosContext.jsx'
 import './hoy.css'
 
-// TODO: reemplazar por fetch real a la API (Backend) cuando esté desplegada.
-const MOCK_EVENTOS = [
-  { id: '1', titulo: 'Reunión de acuerdos', hora: '09:00', hecho: false },
-  { id: '2', titulo: 'Revisar checklist de accesibilidad', hora: '11:30', hecho: true },
-  { id: '3', titulo: 'Sync con Backend', hora: '23:00', hecho: false },
-  { id: '4', titulo: 'Reunión de equipo', hora: '22:00', hecho: false },
-]
-
 const UMBRAL_URGENTE_MIN = 60 // minutos: si falta menos de esto, es "urgente"
+
+// Cambia esto a true para ver el estado "error" en las capturas de evidencia.
+// TODO: cuando exista la API real, el estado "error" saldrá solo si el fetch falla.
+const FORZAR_ERROR_DEMO = false
 
 // Clasifica un evento en 'vencido' | 'urgente' | 'proximo' según la hora actual.
 function clasificar(evento, ahora) {
@@ -27,31 +24,18 @@ function clasificar(evento, ahora) {
 const ETIQUETA = { vencido: 'Vencido', urgente: 'Urgente', proximo: 'Próximo' }
 const PRIORIDAD = { vencido: 0, urgente: 1, proximo: 2, hecho: 3 }
 
-function fetchEventosDeHoy() {
-  // Simulación de llamada a red. Cambia MODE abajo para ver los 3 estados.
-  const MODE = 'exito' // 'exito' | 'vacio' | 'error'
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (MODE === 'error') reject(new Error('No se pudo cargar tu día'))
-      else if (MODE === 'vacio') resolve([])
-      else resolve(MOCK_EVENTOS)
-    }, 400)
-  })
-}
-
 export default function Hoy() {
+  const { eventos } = useEventos()
   const [estado, setEstado] = useState('cargando') // cargando | vacio | exito | error
-  const [eventos, setEventos] = useState([])
 
   useEffect(() => {
     setEstado('cargando')
-    fetchEventosDeHoy()
-      .then((data) => {
-        setEventos(data)
-        setEstado(data.length === 0 ? 'vacio' : 'exito')
-      })
-      .catch(() => setEstado('error'))
-  }, [])
+    const t = setTimeout(() => {
+      if (FORZAR_ERROR_DEMO) setEstado('error')
+      else setEstado(eventos.length === 0 ? 'vacio' : 'exito')
+    }, 300)
+    return () => clearTimeout(t)
+  }, [eventos])
 
   return (
     <div className="hoy">
