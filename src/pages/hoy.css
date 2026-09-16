@@ -1,0 +1,138 @@
+.hoy__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 20px;
+}
+
+.hoy__title {
+  font-size: 26px;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.btn--accion {
+  margin-top: 0;
+  font-size: 13px;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.hoy__hint {
+  color: #8a8579;
+  font-size: 14px;
+}
+
+.state {
+  border-radius: var(--radius);
+  padding: 24px 18px;
+  text-align: center;
+}
+
+.state--vacio {
+  background: var(--paper-dim);
+  border: 1px dashed var(--line);
+}
+
+.state--error {
+  background: var(--err-bg);
+  color: var(--err);
+}
+
+.state--error button {
+  margin-top: 10px;
+  border: 1px solid var(--err);
+  background: transparent;
+  color: var(--err);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 12px;
+  background: var(--accent);
+  color: #2b1a04;
+  text-decoration: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.lista-eventos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evento {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  text-decoration: none;
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.evento__hora {
+  font-size: 12px;
+  color: #8a8579;
+  min-width: 44px;
+}
+
+.evento__titulo {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.evento--hecho {
+  opacity: 0.5;
+}
+
+.evento--hecho .evento__titulo {
+  text-decoration: line-through;
+}
+
+.evento--vencido {
+  border-color: var(--err);
+  background: var(--err-bg);
+}
+
+.evento--urgente {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.etiqueta {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.etiqueta--vencido {
+  background: var(--err);
+  color: white;
+}
+
+.etiqueta--urgente {
+  background: var(--accent);
+  color: #2b1a04;
+}
+
+.etiqueta--proximo {
+  background: var(--paper-dim);
+  color: #736f64;
+  border: 1px solid var(--line);
+}
