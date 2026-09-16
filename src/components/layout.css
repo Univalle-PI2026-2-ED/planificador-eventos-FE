@@ -1,4 +1,9 @@
+/* ==========================================================================
+   layout.css — marco de la aplicación (topbar + contenido + tabbar)
+   ========================================================================== */
+
 .shell {
+  position: relative;
   max-width: 480px;
   margin: 0 auto;
   min-height: 100%;
@@ -9,52 +14,157 @@
   border-right: 1px solid var(--line);
 }
 
+/* --- Topbar ---------------------------------------------------------- */
+
 .topbar {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 20px 20px 16px;
+  gap: 12px;
+  padding: 18px 20px 14px;
   border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
 }
 
 .brand {
-  font-size: 22px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 21px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  color: var(--ink);
 }
 
-.date {
-  font-size: 12px;
-  color: #736f64;
-  text-transform: capitalize;
+.brand::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  translate: 0 -2px;
+  flex: none;
 }
+
+/* La fecha es la firma editorial de la vista: serif en cursiva */
+.date {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+/* --- Contenido -------------------------------------------------------- */
 
 .content {
   flex: 1;
-  padding: 20px;
-  padding-bottom: 8px;
+  padding: 22px 20px 24px;
 }
+
+/* Cada vista entra con un desplazamiento mínimo al cambiar de pestaña */
+.vista {
+  animation: vista-entra 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes vista-entra {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+/* --- Barra de pestañas ------------------------------------------------ */
 
 .tabbar {
   display: flex;
   border-top: 1px solid var(--line);
   position: sticky;
   bottom: 0;
-  background: var(--paper);
+  z-index: 20;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .tab {
+  position: relative;
   flex: 1;
+  padding: 13px 0 15px;
   text-align: center;
-  padding: 14px 0 16px;
   text-decoration: none;
-  color: #8a8579;
+  color: var(--ink-3);
   font-size: 14px;
   font-weight: 500;
-  border-top: 2px solid transparent;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--t);
+}
+
+.tab::after {
+  content: "";
+  position: absolute;
+  inset-inline: 50%;
+  top: -1px;
+  height: 2px;
+  background: var(--accent);
+  transition: inset-inline var(--t);
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline-offset: -4px;
 }
 
 .tab--active {
   color: var(--ink);
-  border-top-color: var(--accent);
+  font-weight: 600;
+}
+
+.tab--active::after {
+  inset-inline: 30%;
+}
+
+/* Indicador de gestiones pendientes sobre la pestaña "Hoy" */
+.tab__contador {
+  display: inline-block;
+  min-width: 17px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  translate: 0 -1px;
+}
+
+/* --- Pantallas anchas: el marco deja de ser un teléfono ---------------- */
+
+@media (min-width: 720px) {
+  .shell {
+    max-width: 560px;
+    border-radius: var(--radius);
+    margin: 24px auto;
+    min-height: calc(100% - 48px);
+    border: 1px solid var(--line);
+    box-shadow: var(--sombra);
+    overflow: clip;
+  }
+}
+
+.tab__contador[hidden] {
+  display: none;
 }

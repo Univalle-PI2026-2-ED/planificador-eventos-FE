@@ -1,41 +1,207 @@
+/* ==========================================================================
+   crear.css — Vista "Crear evento" (T1)
+   Dos bloques: el evento y su plan de trabajo. Cada gestión es una ficha con
+   nombre arriba y sus datos (día, hora, horas) debajo, para que quepa cómodo
+   en pantalla angosta sin apretar los campos.
+   ========================================================================== */
+
 .crear__title {
-  font-size: 22px;
-  margin: 4px 0 20px;
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.crear__intro {
+  margin: 0 0 22px;
+  font-size: 14px;
+  color: var(--ink-2);
+  max-width: 42ch;
 }
 
 .crear__form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
 }
 
-.campo {
+/* --- Bloques ----------------------------------------------------------- */
+
+.bloque {
+  display: grid;
+  gap: 14px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.bloque > .btn {
+  justify-self: start;
+}
+
+.bloque__titulo {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: #55524a;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
 }
 
-.campo input {
-  font-size: 15px;
-  padding: 10px 12px;
+.bloque__nota {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.fila-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* --- Gestiones del plan ------------------------------------------------ */
+
+.subtareas {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.subtarea {
+  display: grid;
+  grid-template-columns: 1fr 32px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
-  color: var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper-dim);
+  animation: subtarea-entra 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  transition: border-color var(--t), background var(--t);
 }
 
-.campo input:focus {
-  outline: 2px solid var(--accent);
+.subtarea:focus-within {
+  border-color: var(--accent-line);
+  background: var(--paper-2);
+}
+
+@keyframes subtarea-entra {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+}
+
+.subtarea__datos {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr 0.7fr;
+  gap: 8px;
+}
+
+.subtarea input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  transition: border-color var(--t);
+}
+
+.subtarea__nombre {
+  font-weight: 500;
+}
+
+.subtarea input:hover {
+  border-color: var(--line-fuerte);
+}
+
+.subtarea input:focus-visible {
+  border-color: var(--accent);
   outline-offset: 1px;
 }
 
-.btn--full {
-  width: 100%;
-  border: none;
+.subtarea__quitar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-3);
+  font-size: 17px;
+  line-height: 1;
   cursor: pointer;
-  margin-top: 4px;
-  padding: 12px 16px;
-  font-size: 15px;
+  transition: color var(--t), background var(--t), border-color var(--t);
+}
+
+.subtarea__quitar:hover {
+  color: var(--err);
+  background: var(--err-bg);
+  border-color: var(--err-line);
+}
+
+/* --- Total y validación ------------------------------------------------ */
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--paper-dim);
+  border: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  transition: border-color var(--t), background var(--t);
+}
+
+.total__cifra {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.total--excedido {
+  border-color: var(--accent-line);
+  background: var(--accent-bg);
+}
+
+.total--excedido .total__cifra {
+  color: var(--accent-claro);
+}
+
+/* --- Acciones ---------------------------------------------------------- */
+
+.crear__acciones {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.crear__acciones .btn--full {
+  justify-self: stretch;
+}
+
+@media (max-width: 380px) {
+  .subtarea__datos {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .subtarea__datos input:first-child {
+    grid-column: 1 / -1;
+  }
 }
