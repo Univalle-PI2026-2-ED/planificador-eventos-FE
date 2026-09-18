@@ -16,12 +16,8 @@ export default function Crear() {
   const [nombre, setNombre] = useState('')
   const [fecha, setFecha] = useState(sumarDias(hoyISO(), 7))
   const [limite, setLimite] = useState(limiteHoras)
-  const [plan, setPlan] = useState([
-    { k: 1, nombre: 'Reservar salón', fecha: hoyISO(), hora: '09:00', horas: 1.5 },
-    { k: 2, nombre: 'Enviar invitaciones', fecha: sumarDias(hoyISO(), 1), hora: '11:30', horas: 1 },
-    { k: 3, nombre: 'Confirmar catering', fecha: sumarDias(hoyISO(), 1), hora: '16:00', horas: 2 },
-  ])
-  const [siguienteK, setSiguienteK] = useState(4)
+  const [plan, setPlan] = useState([])
+  const [siguienteK, setSiguienteK] = useState(1)
   const [errores, setErrores] = useState({})
 
   const actualizar = (k, campo, valor) =>
@@ -49,6 +45,16 @@ export default function Crear() {
     if (n > 0) setLimiteHoras(n)
   }
 
+  function validarNombreEnTiempoReal(texto) {
+  if (!texto.trim()) {
+    return 'Escribe un nombre para reconocer el evento.'
+  }
+  if (nombreDuplicado(texto)) {
+    return 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
+  }
+  return '' // Sin errores
+}
+
   function handleSubmit(e) {
     e.preventDefault()
     const nuevos = {}
@@ -59,6 +65,8 @@ export default function Crear() {
     if (plan.length === 0) nuevos.plan = 'Añade al menos una gestión al plan.'
     else if (plan.some((g) => !g.nombre.trim() || !g.hora || !g.fecha)) {
       nuevos.plan = 'Cada gestión necesita un nombre, un día y una hora.'
+    } else if (plan.some((g) => Number(g.horas) <= 0 || isNaN(Number(g.horas)))) {
+      nuevos.plan = 'El tiempo estimado debe ser un número mayor a 0.'
     }
     setErrores(nuevos)
     if (Object.keys(nuevos).length > 0) return
@@ -91,7 +99,12 @@ export default function Crear() {
             <input
               id="f-nombre"
               value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              onChange={(e) => {
+                const nuevoTexto = e.target.value
+                setNombre(nuevoTexto)
+                const error = validarNombreEnTiempoReal(nuevoTexto)
+                setErrores((prev) => ({ ...prev, nombre: error }))
+              }}
               placeholder="Ej. Boda de Ana y Luis"
               aria-invalid={errores.nombre ? 'true' : undefined}
               aria-describedby={errores.nombre ? 'err-nombre' : undefined}
@@ -113,13 +126,31 @@ export default function Crear() {
                 max="12"
                 step="0.5"
                 value={limite}
-                onChange={(e) => cambiarLimite(e.target.value)}
+                onKeyDown={(e) => {
+                  if (['-', '+', 'e', 'E'].includes(e.key)) {
+                    e.preventDefault()
+                  }
+                }}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val > 0) {
+                    cambiarLimite(val)
+                  } else {
+                    cambiarLimite('') // Deja el campo vacío si borra o pone <= 0
+                  }
+                }}
               />
             </div>
           </div>
+          {(limite === '' || Number(limite) <= 0) ? (
+          <p className="campo__error">
+            * Ingresa un límite de horas diario válido (por ejemplo: 8 o 8.5 horas).
+          </p>
+          ) : (
           <p className="campo__ayuda">
             Usamos el límite para avisarte cuando un día acumule más gestiones de las que puedes atender.
           </p>
+          )}
         </section>
 
         <section className="bloque">
@@ -170,9 +201,19 @@ export default function Crear() {
                     step="0.5"
                     aria-label={`Horas estimadas de la gestión ${i + 1}`}
                     value={g.horas}
-                    onChange={(e) => actualizar(g.k, 'horas', e.target.value)}
+                    onKeyDown={(e) => {
+                      if (['-', '+', 'e', 'E'].includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={(e) => actualizar(g.k, 'horas', e.target.value > 0 ? e.target.value : '')}
                   />
                 </div>
+                {(g.horas === '' || Number(g.horas) <= 0) && (
+                  <p className="subtarea__error-texto">
+                    * El tiempo estimado debe ser mayor a 0 horas.
+                  </p>
+                )}
               </li>
             ))}
           </ul>
