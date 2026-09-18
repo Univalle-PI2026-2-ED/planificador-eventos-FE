@@ -108,8 +108,20 @@ export function EventosProvider({ children }) {
 
   /* ---- acciones ------------------------------------------------------ */
 
+  // Un evento se reconoce por su nombre: dos eventos con el mismo nombre
+// (sin importar mayúsculas ni espacios sobrantes) se consideran duplicados.
+  const nombreDuplicado = useCallback(
+    (nombre, excluirId = null) =>
+      eventos.some(
+        (ev) => ev.id !== excluirId && ev.nombre.trim().toLowerCase() === nombre.trim().toLowerCase(),
+      ),
+    [eventos],
+  )
+
   const agregarEvento = useCallback(
     ({ nombre, fecha, gestiones: plan }) => {
+      if (nombreDuplicado(nombre)) return null
+
       const nuevo = {
         id: nuevoId(),
         nombre: nombre.trim(),
@@ -128,7 +140,30 @@ export function EventosProvider({ children }) {
       anotar('Creaste', nuevo.nombre, `con ${nuevo.gestiones.length} gestiones`)
       return nuevo
     },
-    [anotar],
+    [anotar, nombreDuplicado],
+  )
+
+  const eliminarEvento = useCallback(
+    (eventoId) => {
+      const ev = eventos.find((e) => e.id === eventoId)
+      setEventos((prev) => prev.filter((e) => e.id !== eventoId))
+      if (ev) anotar('Eliminaste', ev.nombre)
+    },
+    [anotar, eventos],
+  )
+
+  const eliminarGestion = useCallback(
+    (gestionId) => {
+      const g = gestiones.find((x) => x.id === gestionId)
+      setEventos((prev) =>
+        prev.map((ev) => ({
+          ...ev,
+          gestiones: ev.gestiones.filter((x) => x.id !== gestionId),
+        })),
+      )
+      if (g) anotar('Eliminaste', g.nombre)
+    },
+    [anotar, gestiones],
   )
 
   const marcarGestion = useCallback(
@@ -177,7 +212,10 @@ export function EventosProvider({ children }) {
       horasDelDia,
       obtenerEvento,
       obtenerGestion,
+      nombreDuplicado,
       agregarEvento,
+      eliminarEvento,
+      eliminarGestion,
       marcarGestion,
       guardarNota,
       reprogramarGestion,
@@ -185,8 +223,9 @@ export function EventosProvider({ children }) {
     }),
     [
       eventos, gestiones, limiteHoras, estadoCarga, cargar, bitacora, anotar,
-      gestionesDelDia, horasDelDia, obtenerEvento, obtenerGestion, agregarEvento,
-      marcarGestion, guardarNota, reprogramarGestion, posponerGestion,
+      gestionesDelDia, horasDelDia, obtenerEvento, obtenerGestion, nombreDuplicado,
+      agregarEvento, eliminarEvento, eliminarGestion, marcarGestion, guardarNota,
+      reprogramarGestion, posponerGestion,
     ],
   )
 

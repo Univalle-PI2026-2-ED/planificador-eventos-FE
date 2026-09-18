@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
 import { useAvisos } from '../context/AvisosContext.jsx'
 import DialogoReprogramar from '../components/DialogoReprogramar.jsx'
+import ConfirmarEliminar from '../components/ConfirmarEliminar.jsx'
 import { fechaLarga, formatoHoras, mayuscula, nombreDia } from '../lib/fechas.js'
 import { clasificar } from '../lib/prioridad.js'
 import './evento.css'
@@ -15,9 +16,12 @@ const claseSegmento = (g) => {
 
 export default function Evento() {
   const { id } = useParams()
-  const { obtenerEvento, marcarGestion, guardarNota } = useEventos()
+  const navigate = useNavigate()
+  const { obtenerEvento, marcarGestion, guardarNota, eliminarEvento, eliminarGestion } = useEventos()
   const { avisar } = useAvisos()
   const [reprogramando, setReprogramando] = useState(null)
+  const [eliminandoEvento, setEliminandoEvento] = useState(false)
+  const [eliminandoGestion, setEliminandoGestion] = useState(null)
   const evento = obtenerEvento(id)
 
   if (!evento) {
@@ -42,10 +46,33 @@ export default function Evento() {
     avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
   }
 
+  function confirmarEliminarEvento() {
+  eliminarEvento(evento.id)
+  avisar('Evento eliminado')
+  setEliminandoEvento(false)
+  navigate('/hoy')
+}
+
+function confirmarEliminarGestion() {
+  eliminarGestion(eliminandoGestion.id)
+  avisar('Gestión eliminada')
+  setEliminandoGestion(null)
+}
+
   return (
     <div className="evento-detalle vista">
       <Link to="/hoy" className="volver">Volver a hoy</Link>
-      <h1>{evento.nombre}</h1>
+      <div className="detalle__header">
+        <h1>{evento.nombre}</h1>
+        <button
+          type="button"
+          className="btn btn--peligro btn--sm"
+          onClick={() => setEliminandoEvento(true)}
+        >
+          Eliminar evento
+        </button>
+      </div>
+
 
       <p className="detalle__meta">
         <span>{fechaLarga(evento.fecha)}</span>
@@ -109,6 +136,13 @@ export default function Evento() {
                       >
                         Reprogramar
                       </button>
+                      <button
+                        type="button"
+                        className="btn btn--peligro btn--sm"
+                        onClick={() => setEliminandoGestion(g)}
+                      >
+                        Eliminar
+                      </button>
                     </div>
 
                     {hecho && (
@@ -135,6 +169,21 @@ export default function Evento() {
       })}
 
       <DialogoReprogramar gestion={reprogramando} onCerrar={() => setReprogramando(null)} />
+        <ConfirmarEliminar
+        elemento={eliminandoEvento ? evento : null}
+        titulo="¿Eliminar este evento?"
+        texto={`Se eliminará “${evento.nombre}” junto con sus ${evento.gestiones.length} gestiones. Esta acción no se puede deshacer.`}
+        onConfirmar={confirmarEliminarEvento}
+        onCerrar={() => setEliminandoEvento(false)}
+      />
+
+      <ConfirmarEliminar
+        elemento={eliminandoGestion}
+        titulo="¿Eliminar esta gestión?"
+        texto={eliminandoGestion ? `Se eliminará “${eliminandoGestion.nombre}” del plan de trabajo. Esta acción no se puede deshacer.` : ''}
+        onConfirmar={confirmarEliminarGestion}
+        onCerrar={() => setEliminandoGestion(null)}
+      />
     </div>
   )
 }

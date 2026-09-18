@@ -39,6 +39,18 @@
   margin-bottom: 6px;
 }
 
+.detalle__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.detalle__header h1 {
+  margin-bottom: 0;
+}
+
 .detalle__meta {
   display: flex;
   flex-wrap: wrap;

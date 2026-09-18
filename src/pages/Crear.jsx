@@ -10,7 +10,7 @@ const gestionVacia = (k) => ({ k, nombre: '', fecha: hoyISO(), hora: '09:00', ho
 // T1: crear el evento y su plan de trabajo logístico con plazos y horas.
 export default function Crear() {
   const navigate = useNavigate()
-  const { agregarEvento, limiteHoras, setLimiteHoras } = useEventos()
+  const { agregarEvento, nombreDuplicado, limiteHoras, setLimiteHoras } = useEventos()
   const { avisar } = useAvisos()
 
   const [nombre, setNombre] = useState('')
@@ -53,6 +53,9 @@ export default function Crear() {
     e.preventDefault()
     const nuevos = {}
     if (!nombre.trim()) nuevos.nombre = 'Escribe un nombre para reconocer el evento.'
+    else if (nombreDuplicado(nombre)) {
+      nuevos.nombre = 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
+    }
     if (plan.length === 0) nuevos.plan = 'Añade al menos una gestión al plan.'
     else if (plan.some((g) => !g.nombre.trim() || !g.hora || !g.fecha)) {
       nuevos.plan = 'Cada gestión necesita un nombre, un día y una hora.'
@@ -62,6 +65,11 @@ export default function Crear() {
 
     // TODO (Backend): POST /eventos y esperar la respuesta antes de navegar.
     const evento = agregarEvento({ nombre, fecha, gestiones: plan })
+    if (!evento) {
+      // Defensa extra por si el nombre se duplicó entre la validación y el guardado.
+      setErrores({ nombre: 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.' })
+      return
+    }
     avisar('Evento creado')
     navigate(`/evento/${evento.id}`)
   }
