@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
 import { useAvisos } from '../context/AvisosContext.jsx'
@@ -19,6 +19,7 @@ export default function Evento() {
   const navigate = useNavigate()
   const { obtenerEvento, marcarGestion, guardarNota, eliminarEvento, eliminarGestion } = useEventos()
   const { avisar } = useAvisos()
+  const refTitulo = useRef(null)
   const [reprogramando, setReprogramando] = useState(null)
   const [eliminandoEvento, setEliminandoEvento] = useState(false)
   const [eliminandoGestion, setEliminandoGestion] = useState(null)
@@ -47,23 +48,24 @@ export default function Evento() {
   }
 
   function confirmarEliminarEvento() {
-  eliminarEvento(evento.id)
-  avisar('Evento eliminado')
-  setEliminandoEvento(false)
-  navigate('/hoy')
-}
+    eliminarEvento(evento.id)
+    avisar('Evento eliminado')
+    setEliminandoEvento(false)
+    navigate('/hoy')
+  }
 
-function confirmarEliminarGestion() {
-  eliminarGestion(eliminandoGestion.id)
-  avisar('Gestión eliminada')
-  setEliminandoGestion(null)
-}
+  function confirmarEliminarGestion() {
+    eliminarGestion(eliminandoGestion.id)
+    avisar('Gestión eliminada')
+    setEliminandoGestion(null)
+    requestAnimationFrame(() => refTitulo.current?.focus())
+  }
 
   return (
     <div className="evento-detalle vista">
       <Link to="/hoy" className="volver">Volver a hoy</Link>
       <div className="detalle__header">
-        <h1>{evento.nombre}</h1>
+        <h1 ref={refTitulo} tabIndex={-1}>{evento.nombre}</h1>
         <button
           type="button"
           className="btn btn--peligro btn--sm"
@@ -133,6 +135,7 @@ function confirmarEliminarGestion() {
                         type="button"
                         className="btn btn--fantasma btn--sm"
                         onClick={() => setReprogramando(g)}
+                        aria-label={`Reprogramar ${g.nombre}`}
                       >
                         Reprogramar
                       </button>
@@ -140,6 +143,7 @@ function confirmarEliminarGestion() {
                         type="button"
                         className="btn btn--peligro btn--sm"
                         onClick={() => setEliminandoGestion(g)}
+                        aria-label={`Eliminar ${g.nombre}`}
                       >
                         Eliminar
                       </button>
