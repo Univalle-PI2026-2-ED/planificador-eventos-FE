@@ -42,23 +42,36 @@ export default function Evento() {
   const pct = Math.round((hechas / evento.gestiones.length) * 100)
   const dias = [...new Set(evento.gestiones.map((g) => g.fecha))].sort()
 
-  function alternar(gestion, marcado) {
-    marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
-    avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
+  async function alternar(gestion, marcado) {
+    try {
+      await marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
+      avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
+    } catch {
+      avisar('No se pudo actualizar la gestión. Intenta de nuevo.')
+    }
   }
 
   async function confirmarEliminarEvento() {
-  await eliminarEvento(evento.id)
-  avisar('Evento eliminado')
-  setEliminandoEvento(false)
-  navigate('/hoy')
+  try {
+    await eliminarEvento(evento.id)
+    avisar('Evento eliminado')
+    setEliminandoEvento(false)
+    navigate('/hoy')
+  } catch {
+    avisar('No se pudo eliminar el evento. Intenta de nuevo.')
+  }
 }
 
+
 async function confirmarEliminarGestion() {
-  await eliminarGestion(eliminandoGestion.id)
-  avisar('Gestión eliminada')
-  setEliminandoGestion(null)
-  requestAnimationFrame(() => refTitulo.current?.focus())
+  try {
+    await eliminarGestion(eliminandoGestion.id)
+    avisar('Gestión eliminada')
+    setEliminandoGestion(null)
+    requestAnimationFrame(() => refTitulo.current?.focus())
+  } catch {
+    avisar('No se pudo eliminar la gestión. Intenta de nuevo.')
+  }
 }
 
   return (
@@ -156,10 +169,14 @@ async function confirmarEliminarGestion() {
                         defaultValue={g.nota}
                         placeholder="Nota (opcional): ¿quedó algo pendiente?"
                         aria-label={`Nota de ${g.nombre}`}
-                        onBlur={(e) => {
+                        onBlur={async (e) => {
                           if (e.target.value !== g.nota) {
-                            guardarNota(g.id, e.target.value)
-                            avisar('Nota guardada')
+                            try {
+                              await guardarNota(g.id, e.target.value)
+                              avisar('Nota guardada')
+                            } catch {
+                              avisar('No se pudo guardar la nota. Intenta de nuevo.')
+                            }
                           }
                         }}
                       />
