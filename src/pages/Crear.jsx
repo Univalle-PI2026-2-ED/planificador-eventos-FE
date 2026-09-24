@@ -78,7 +78,7 @@ export default function Crear() {
       setErrores({ nombre: 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.' })
       return
     }
-    avisar('Evento creado')
+    avisar('Evento creado exitosamente')
     navigate(`/evento/${evento.id}`)
   }
 
