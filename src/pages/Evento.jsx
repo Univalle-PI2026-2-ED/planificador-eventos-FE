@@ -54,7 +54,7 @@ export default function Evento() {
   async function confirmarEliminarEvento() {
   try {
     await eliminarEvento(evento.id)
-    avisar('Evento eliminado')
+    avisar(`Se eliminó "${evento.nombre}"`)
     setEliminandoEvento(false)
     navigate('/hoy')
   } catch {
@@ -66,7 +66,7 @@ export default function Evento() {
 async function confirmarEliminarGestion() {
   try {
     await eliminarGestion(eliminandoGestion.id)
-    avisar('Gestión eliminada')
+    avisar(`Se eliminó "${eliminandoGestion.nombre}"`)
     setEliminandoGestion(null)
     requestAnimationFrame(() => refTitulo.current?.focus())
   } catch {
