@@ -47,19 +47,19 @@ export default function Evento() {
     avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
   }
 
-  function confirmarEliminarEvento() {
-    eliminarEvento(evento.id)
-    avisar('Evento eliminado')
-    setEliminandoEvento(false)
-    navigate('/hoy')
-  }
+  async function confirmarEliminarEvento() {
+  await eliminarEvento(evento.id)
+  avisar('Evento eliminado')
+  setEliminandoEvento(false)
+  navigate('/hoy')
+}
 
-  function confirmarEliminarGestion() {
-    eliminarGestion(eliminandoGestion.id)
-    avisar('Gestión eliminada')
-    setEliminandoGestion(null)
-    requestAnimationFrame(() => refTitulo.current?.focus())
-  }
+async function confirmarEliminarGestion() {
+  await eliminarGestion(eliminandoGestion.id)
+  avisar('Gestión eliminada')
+  setEliminandoGestion(null)
+  requestAnimationFrame(() => refTitulo.current?.focus())
+}
 
   return (
     <div className="evento-detalle vista">
@@ -122,7 +122,7 @@ export default function Evento() {
                     <label className="gestion__nombre" htmlFor={`chk-${g.id}`}>{g.nombre}</label>
 
                     <div className="gestion__datos">
-                      <span className="num">{g.hora}</span>
+                      <span className="num">{g.hora.slice(0, 5)}</span>
                       <i className="evento__punto" />
                       <span className="num">{formatoHoras(g.horas)}</span>
                       {g.estado === 'pospuesto' && (
