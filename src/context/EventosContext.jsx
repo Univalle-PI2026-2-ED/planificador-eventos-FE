@@ -78,7 +78,9 @@ export function EventosProvider({ children }) {
     [gestiones],
   )
 
-  const obtenerEvento = useCallback((id) => eventos.find((ev) => ev.id === id), [eventos])
+  const obtenerEvento = useCallback(
+  (id) => eventos.find((ev) => String(ev.id) === String(id)),
+  [eventos],)
   const obtenerGestion = useCallback((id) => gestiones.find((g) => g.id === id), [gestiones])
 
   /* ---- acciones ------------------------------------------------------ */

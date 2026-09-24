@@ -62,7 +62,7 @@ export default function Crear() {
     return '' // Sin errores
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     const nuevos = {}
     if (!nombre.trim()) nuevos.nombre = 'Escribe un nombre para reconocer el evento.'
@@ -81,15 +81,18 @@ export default function Crear() {
       return
     }
 
-    // TODO (Backend): POST /eventos y esperar la respuesta antes de navegar.
-    const evento = agregarEvento({ nombre, fecha, gestiones: plan })
-    if (!evento) {
-      // Defensa extra por si el nombre se duplicó entre la validación y el guardado.
-      setErrores({ nombre: 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.' })
-      return
+    try {
+      const evento = await agregarEvento({ nombre, fecha, gestiones: plan })
+      avisar('Evento creado')
+      navigate(`/evento/${evento.id}`)
+    } catch (err) {
+      if (err.detalle?.nombre) {
+        setErrores({ nombre: err.detalle.nombre[0] })
+        refNombre.current?.focus()
+      } else {
+        avisar('No se pudo crear el evento. Intenta de nuevo.')
+      }
     }
-    avisar('Evento creado')
-    navigate(`/evento/${evento.id}`)
   }
 
   return (
