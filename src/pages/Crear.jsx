@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
 import { useAvisos } from '../context/AvisosContext.jsx'
@@ -12,7 +12,9 @@ export default function Crear() {
   const navigate = useNavigate()
   const { agregarEvento, nombreDuplicado, limiteHoras, setLimiteHoras } = useEventos()
   const { avisar } = useAvisos()
-
+  const refNombre = useRef(null)
+  const refsNombreGestion = useRef({})
+  const refAgregar = useRef(null)
   const [nombre, setNombre] = useState('')
   const [fecha, setFecha] = useState(sumarDias(hoyISO(), 7))
   const [limite, setLimite] = useState(limiteHoras)
@@ -23,11 +25,16 @@ export default function Crear() {
   const actualizar = (k, campo, valor) =>
     setPlan((prev) => prev.map((g) => (g.k === k ? { ...g, [campo]: valor } : g)))
 
-  const quitar = (k) => setPlan((prev) => prev.filter((g) => g.k !== k))
+  const quitar = (k) => {
+    setPlan((prev) => prev.filter((g) => g.k !== k))
+    requestAnimationFrame(() => refAgregar.current?.focus())
+  }
 
   function agregarGestion() {
-    setPlan((prev) => [...prev, gestionVacia(siguienteK)])
+    const k = siguienteK
+    setPlan((prev) => [...prev, gestionVacia(k)])
     setSiguienteK((n) => n + 1)
+    requestAnimationFrame(() => refsNombreGestion.current[k]?.focus())
   }
 
   const totalHoras = plan.reduce((s, g) => s + (Number(g.horas) || 0), 0)
@@ -46,16 +53,16 @@ export default function Crear() {
   }
 
   function validarNombreEnTiempoReal(texto) {
-  if (!texto.trim()) {
-    return 'Escribe un nombre para reconocer el evento.'
+    if (!texto.trim()) {
+      return 'Escribe un nombre para reconocer el evento.'
+    }
+    if (nombreDuplicado(texto)) {
+      return 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
+    }
+    return '' // Sin errores
   }
-  if (nombreDuplicado(texto)) {
-    return 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
-  }
-  return '' // Sin errores
-}
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     const nuevos = {}
     if (!nombre.trim()) nuevos.nombre = 'Escribe un nombre para reconocer el evento.'
@@ -69,17 +76,23 @@ export default function Crear() {
       nuevos.plan = 'El tiempo estimado debe ser un número mayor a 0.'
     }
     setErrores(nuevos)
-    if (Object.keys(nuevos).length > 0) return
-
-    // TODO (Backend): POST /eventos y esperar la respuesta antes de navegar.
-    const evento = agregarEvento({ nombre, fecha, gestiones: plan })
-    if (!evento) {
-      // Defensa extra por si el nombre se duplicó entre la validación y el guardado.
-      setErrores({ nombre: 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.' })
+    if (Object.keys(nuevos).length > 0) {
+      if (nuevos.nombre) refNombre.current?.focus()
       return
     }
-    avisar('Evento creado exitosamente')
-    navigate(`/evento/${evento.id}`)
+
+    try {
+      const evento = await agregarEvento({ nombre, fecha, gestiones: plan })
+      avisar('Evento creado')
+      navigate(`/evento/${evento.id}`)
+    } catch (err) {
+      if (err.detalle?.nombre) {
+        setErrores({ nombre: err.detalle.nombre[0] })
+        refNombre.current?.focus()
+      } else {
+        avisar('No se pudo crear el evento. Intenta de nuevo.')
+      }
+    }
   }
 
   return (
@@ -98,6 +111,7 @@ export default function Crear() {
             <label className="campo__label" htmlFor="f-nombre">Nombre del evento</label>
             <input
               id="f-nombre"
+              ref={refNombre}
               value={nombre}
               onChange={(e) => {
                 const nuevoTexto = e.target.value
@@ -126,6 +140,8 @@ export default function Crear() {
                 max="12"
                 step="0.5"
                 value={limite}
+                aria-invalid={(limite === '' || Number(limite) <= 0) ? 'true' : undefined}
+                aria-describedby={(limite === '' || Number(limite) <= 0) ? 'err-limite' : undefined}
                 onKeyDown={(e) => {
                   if (['-', '+', 'e', 'E'].includes(e.key)) {
                     e.preventDefault()
@@ -143,13 +159,13 @@ export default function Crear() {
             </div>
           </div>
           {(limite === '' || Number(limite) <= 0) ? (
-          <p className="campo__error">
-            * Ingresa un límite de horas diario válido (por ejemplo: 8 o 8.5 horas).
-          </p>
+            <p className="campo__error" id="err-limite">
+              * Ingresa un límite de horas diario válido (por ejemplo: 8 o 8.5 horas).
+            </p>
           ) : (
-          <p className="campo__ayuda">
-            Usamos el límite para avisarte cuando un día acumule más gestiones de las que puedes atender.
-          </p>
+            <p className="campo__ayuda">
+              Usamos el límite para avisarte cuando un día acumule más gestiones de las que puedes atender.
+            </p>
           )}
         </section>
 
@@ -168,6 +184,7 @@ export default function Crear() {
               <li className="subtarea" key={g.k}>
                 <input
                   className="subtarea__nombre"
+                  ref={(el) => (refsNombreGestion.current[g.k] = el)}
                   aria-label={`Nombre de la gestión ${i + 1}`}
                   value={g.nombre}
                   onChange={(e) => actualizar(g.k, 'nombre', e.target.value)}
@@ -200,6 +217,8 @@ export default function Crear() {
                     max="8"
                     step="0.5"
                     aria-label={`Horas estimadas de la gestión ${i + 1}`}
+                    aria-invalid={(g.horas === '' || Number(g.horas) <= 0) ? 'true' : undefined}
+                    aria-describedby={(g.horas === '' || Number(g.horas) <= 0) ? `err-horas-${g.k}` : undefined}
                     value={g.horas}
                     onKeyDown={(e) => {
                       if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -210,7 +229,7 @@ export default function Crear() {
                   />
                 </div>
                 {(g.horas === '' || Number(g.horas) <= 0) && (
-                  <p className="subtarea__error-texto">
+                  <p className="subtarea__error-texto" id={`err-horas-${g.k}`}>
                     * El tiempo estimado debe ser mayor a 0 horas.
                   </p>
                 )}
@@ -220,7 +239,7 @@ export default function Crear() {
 
           {errores.plan && <p className="campo__error">{errores.plan}</p>}
 
-          <button type="button" className="btn btn--fantasma btn--sm" onClick={agregarGestion}>
+          <button type="button" className="btn btn--fantasma btn--sm" ref={refAgregar} onClick={agregarGestion}>
             Añadir gestión
           </button>
 

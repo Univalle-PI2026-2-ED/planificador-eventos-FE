@@ -1,12 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { aHora, hoyISO, minutosAhora, minutosDe, sumarDias } from '../lib/fechas.js'
+import { aHora, minutosAhora } from '../lib/fechas.js'
+import {
+  listarEventos,
+  crearEventoApi,
+  eliminarEventoApi,
+  editarGestionApi,
+  eliminarGestionApi,
+} from '../lib/api.js'
 
 // Modelo: un evento tiene un plan de trabajo (gestiones logísticas) y cada
 // gestión tiene día, hora, horas estimadas, estado y nota.
-//
-// TODO (Backend): reemplazar SEMILLA por GET /eventos, y agregarEvento /
-// marcarGestion / reprogramarGestion por POST y PATCH. La forma del objeto ya
-// está pensada para viajar como JSON tal cual.
+// Ya conectado a la API real (EDX-14): /eventos/ y /gestiones/.
 
 export const LIMITE_POR_DEFECTO = 6
 
@@ -15,50 +19,22 @@ const nuevoId = () =>
     ? crypto.randomUUID()
     : `id-${Math.random().toString(36).slice(2)}`
 
-// Hora relativa al momento en que se abre la app, para que la demo siempre
-// muestre una gestión vencida, una urgente y una próxima.
-const relativa = (min) => aHora(Math.min(23 * 60 + 55, Math.max(5, minutosAhora() + min)))
-
-function semilla() {
-  const hoy = hoyISO()
-  return [
-    {
-      id: 'evt-boda',
-      nombre: 'Boda de Ana y Luis',
-      fecha: sumarDias(hoy, 4),
-      gestiones: [
-        { id: 'g-1', nombre: 'Reservar salón Los Almendros', fecha: hoy, hora: relativa(-125), horas: 1.5, estado: 'pendiente', nota: '' },
-        { id: 'g-2', nombre: 'Confirmar catering', fecha: hoy, hora: relativa(40), horas: 1, estado: 'pendiente', nota: '' },
-        { id: 'g-3', nombre: 'Enviar invitaciones', fecha: hoy, hora: relativa(265), horas: 2, estado: 'pendiente', nota: '' },
-        { id: 'g-4', nombre: 'Cotizar decoración floral', fecha: sumarDias(hoy, 1), hora: '10:00', horas: 2, estado: 'pendiente', nota: '' },
-        { id: 'g-5', nombre: 'Cerrar lista de invitados', fecha: sumarDias(hoy, 1), hora: '14:00', horas: 3, estado: 'pendiente', nota: '' },
-      ],
-    },
-    {
-      id: 'evt-feria',
-      nombre: 'Feria de emprendimiento',
-      fecha: sumarDias(hoy, 12),
-      gestiones: [
-        { id: 'g-6', nombre: 'Buscar proveedores de sonido', fecha: hoy, hora: relativa(-300), horas: 1, estado: 'hecho', nota: 'Quedan dos cotizaciones por comparar.' },
-        { id: 'g-7', nombre: 'Reservar carpas', fecha: sumarDias(hoy, 2), hora: '09:00', horas: 2, estado: 'pendiente', nota: '' },
-      ],
-    },
-  ]
-}
-
 const EventosContext = createContext(null)
 
 export function EventosProvider({ children }) {
-  const [eventos, setEventos] = useState(semilla)
+  const [eventos, setEventos] = useState([])
   const [limiteHoras, setLimiteHoras] = useState(LIMITE_POR_DEFECTO)
   const [estadoCarga, setEstadoCarga] = useState('cargando') // cargando | exito | error
   const [bitacora, setBitacora] = useState([])
 
-  // Simula la latencia de la API mientras no existe el backend.
   const cargar = useCallback(() => {
     setEstadoCarga('cargando')
-    const t = setTimeout(() => setEstadoCarga('exito'), 600)
-    return () => clearTimeout(t)
+    listarEventos()
+      .then((data) => {
+        setEventos(data)
+        setEstadoCarga('exito')
+      })
+      .catch(() => setEstadoCarga('error'))
   }, [])
 
   useEffect(() => cargar(), [cargar])
@@ -90,11 +66,10 @@ export function EventosProvider({ children }) {
     (iso) =>
       gestiones
         .filter((g) => g.fecha === iso)
-        .sort((a, b) => minutosDe(a.hora) - minutosDe(b.hora)),
+        .sort((a, b) => a.hora.localeCompare(b.hora)),
     [gestiones],
   )
 
-  // Horas de gestión comprometidas un día (las hechas ya no pesan en la agenda).
   const horasDelDia = useCallback(
     (iso, excluirId = null) =>
       gestiones
@@ -103,13 +78,13 @@ export function EventosProvider({ children }) {
     [gestiones],
   )
 
-  const obtenerEvento = useCallback((id) => eventos.find((ev) => ev.id === id), [eventos])
+  const obtenerEvento = useCallback(
+  (id) => eventos.find((ev) => String(ev.id) === String(id)),
+  [eventos],)
   const obtenerGestion = useCallback((id) => gestiones.find((g) => g.id === id), [gestiones])
 
   /* ---- acciones ------------------------------------------------------ */
 
-  // Un evento se reconoce por su nombre: dos eventos con el mismo nombre
-// (sin importar mayúsculas ni espacios sobrantes) se consideran duplicados.
   const nombreDuplicado = useCallback(
     (nombre, excluirId = null) =>
       eventos.some(
@@ -119,15 +94,11 @@ export function EventosProvider({ children }) {
   )
 
   const agregarEvento = useCallback(
-    ({ nombre, fecha, gestiones: plan }) => {
-      if (nombreDuplicado(nombre)) return null
-
-      const nuevo = {
-        id: nuevoId(),
+    async ({ nombre, fecha, gestiones: plan }) => {
+      const payload = {
         nombre: nombre.trim(),
         fecha,
         gestiones: plan.map((g) => ({
-          id: nuevoId(),
           nombre: g.nombre.trim(),
           fecha: g.fecha,
           hora: g.hora,
@@ -136,16 +107,18 @@ export function EventosProvider({ children }) {
           nota: '',
         })),
       }
+      const nuevo = await crearEventoApi(payload)
       setEventos((prev) => [...prev, nuevo])
       anotar('Creaste', nuevo.nombre, `con ${nuevo.gestiones.length} gestiones`)
       return nuevo
     },
-    [anotar, nombreDuplicado],
+    [anotar],
   )
 
   const eliminarEvento = useCallback(
-    (eventoId) => {
+    async (eventoId) => {
       const ev = eventos.find((e) => e.id === eventoId)
+      await eliminarEventoApi(eventoId)
       setEventos((prev) => prev.filter((e) => e.id !== eventoId))
       if (ev) anotar('Eliminaste', ev.nombre)
     },
@@ -153,8 +126,9 @@ export function EventosProvider({ children }) {
   )
 
   const eliminarGestion = useCallback(
-    (gestionId) => {
+    async (gestionId) => {
       const g = gestiones.find((x) => x.id === gestionId)
+      await eliminarGestionApi(gestionId)
       setEventos((prev) =>
         prev.map((ev) => ({
           ...ev,
@@ -167,8 +141,9 @@ export function EventosProvider({ children }) {
   )
 
   const marcarGestion = useCallback(
-    (gestionId, estado) => {
+    async (gestionId, estado) => {
       const g = gestiones.find((x) => x.id === gestionId)
+      await editarGestionApi(gestionId, { estado })
       cambiarGestion(gestionId, { estado })
       if (!g) return
       if (estado === 'hecho') anotar('Marcaste como hecha', g.nombre)
@@ -179,22 +154,28 @@ export function EventosProvider({ children }) {
   )
 
   const guardarNota = useCallback(
-    (gestionId, nota) => cambiarGestion(gestionId, { nota }),
+    async (gestionId, nota) => {
+      await editarGestionApi(gestionId, { nota })
+      cambiarGestion(gestionId, { nota })
+    },
     [cambiarGestion],
   )
 
   const reprogramarGestion = useCallback(
-    (gestionId, { fecha, horas }) => {
-      // Reprogramar reactiva la gestión: vuelve a estar pendiente en el nuevo día.
+    async (gestionId, { fecha, horas }) => {
       const cambios = { fecha, estado: 'pendiente' }
       if (horas != null) cambios.horas = Number(horas)
+      await editarGestionApi(gestionId, cambios)
       cambiarGestion(gestionId, cambios)
     },
     [cambiarGestion],
   )
 
   const posponerGestion = useCallback(
-    (gestionId, fecha) => cambiarGestion(gestionId, { fecha, estado: 'pospuesto' }),
+    async (gestionId, fecha) => {
+      await editarGestionApi(gestionId, { fecha, estado: 'pospuesto' })
+      cambiarGestion(gestionId, { fecha, estado: 'pospuesto' })
+    },
     [cambiarGestion],
   )
 

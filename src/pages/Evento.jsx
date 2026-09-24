@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
 import { useAvisos } from '../context/AvisosContext.jsx'
@@ -19,6 +19,7 @@ export default function Evento() {
   const navigate = useNavigate()
   const { obtenerEvento, marcarGestion, guardarNota, eliminarEvento, eliminarGestion } = useEventos()
   const { avisar } = useAvisos()
+  const refTitulo = useRef(null)
   const [reprogramando, setReprogramando] = useState(null)
   const [eliminandoEvento, setEliminandoEvento] = useState(false)
   const [eliminandoGestion, setEliminandoGestion] = useState(null)
@@ -41,29 +42,43 @@ export default function Evento() {
   const pct = Math.round((hechas / evento.gestiones.length) * 100)
   const dias = [...new Set(evento.gestiones.map((g) => g.fecha))].sort()
 
-  function alternar(gestion, marcado) {
-    marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
-    avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
+  async function alternar(gestion, marcado) {
+    try {
+      await marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
+      avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
+    } catch {
+      avisar('No se pudo actualizar la gestión. Intenta de nuevo.')
+    }
   }
 
-  function confirmarEliminarEvento() {
-  eliminarEvento(evento.id)
-  avisar(`Se eliminó "${evento.nombre}"`)
-  setEliminandoEvento(false)
-  navigate('/hoy')
+  async function confirmarEliminarEvento() {
+  try {
+    await eliminarEvento(evento.id)
+    avisar('Evento eliminado')
+    setEliminandoEvento(false)
+    navigate('/hoy')
+  } catch {
+    avisar('No se pudo eliminar el evento. Intenta de nuevo.')
+  }
 }
 
-function confirmarEliminarGestion() {
-  eliminarGestion(eliminandoGestion.id)
-  avisar(`Se eliminó "${eliminandoGestion.nombre}"`)
-  setEliminandoGestion(null)
+
+async function confirmarEliminarGestion() {
+  try {
+    await eliminarGestion(eliminandoGestion.id)
+    avisar('Gestión eliminada')
+    setEliminandoGestion(null)
+    requestAnimationFrame(() => refTitulo.current?.focus())
+  } catch {
+    avisar('No se pudo eliminar la gestión. Intenta de nuevo.')
+  }
 }
 
   return (
     <div className="evento-detalle vista">
       <Link to="/hoy" className="volver">Volver a hoy</Link>
       <div className="detalle__header">
-        <h1>{evento.nombre}</h1>
+        <h1 ref={refTitulo} tabIndex={-1}>{evento.nombre}</h1>
         <button
           type="button"
           className="btn btn--peligro btn--sm"
@@ -120,7 +135,7 @@ function confirmarEliminarGestion() {
                     <label className="gestion__nombre" htmlFor={`chk-${g.id}`}>{g.nombre}</label>
 
                     <div className="gestion__datos">
-                      <span className="num">{g.hora}</span>
+                      <span className="num">{g.hora.slice(0, 5)}</span>
                       <i className="evento__punto" />
                       <span className="num">{formatoHoras(g.horas)}</span>
                       {g.estado === 'pospuesto' && (
@@ -133,6 +148,7 @@ function confirmarEliminarGestion() {
                         type="button"
                         className="btn btn--fantasma btn--sm"
                         onClick={() => setReprogramando(g)}
+                        aria-label={`Reprogramar ${g.nombre}`}
                       >
                         Reprogramar
                       </button>
@@ -140,6 +156,7 @@ function confirmarEliminarGestion() {
                         type="button"
                         className="btn btn--peligro btn--sm"
                         onClick={() => setEliminandoGestion(g)}
+                        aria-label={`Eliminar ${g.nombre}`}
                       >
                         Eliminar
                       </button>
@@ -152,10 +169,14 @@ function confirmarEliminarGestion() {
                         defaultValue={g.nota}
                         placeholder="Nota (opcional): ¿quedó algo pendiente?"
                         aria-label={`Nota de ${g.nombre}`}
-                        onBlur={(e) => {
+                        onBlur={async (e) => {
                           if (e.target.value !== g.nota) {
-                            guardarNota(g.id, e.target.value)
-                            avisar('Nota guardada')
+                            try {
+                              await guardarNota(g.id, e.target.value)
+                              avisar('Nota guardada')
+                            } catch {
+                              avisar('No se pudo guardar la nota. Intenta de nuevo.')
+                            }
                           }
                         }}
                       />
