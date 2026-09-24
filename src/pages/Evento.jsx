@@ -48,14 +48,14 @@ export default function Evento() {
 
   function confirmarEliminarEvento() {
   eliminarEvento(evento.id)
-  avisar('Evento eliminado')
+  avisar(`Se eliminó "${evento.nombre}"`)
   setEliminandoEvento(false)
   navigate('/hoy')
 }
 
 function confirmarEliminarGestion() {
   eliminarGestion(eliminandoGestion.id)
-  avisar('Gestión eliminada')
+  avisar(`Se eliminó "${eliminandoGestion.nombre}"`)
   setEliminandoGestion(null)
 }
 
