@@ -154,6 +154,7 @@ function Grupo({ titulo, items, destacado = false }) {
           <li key={g.id}>
             <Link to={`/evento/${g.evento.id}`} className={`evento evento--${g.clase}`}>
               <span className="evento__hora">{g.hora.slice(0, 5)}</span>
+              <span className="evento__titulo">{g.nombre}</span>
               <span className="evento__meta">
                 {g.evento.nombre}
                 <i className="evento__punto" />
