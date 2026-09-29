@@ -83,7 +83,7 @@ export default function Crear() {
 
     try {
       const evento = await agregarEvento({ nombre, fecha, gestiones: plan })
-      avisar('Evento creado')
+      avisar('Evento creado exitosamente')
       navigate(`/evento/${evento.id}`)
     } catch (err) {
       if (err.detalle?.nombre) {

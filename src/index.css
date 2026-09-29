@@ -1,4 +1,21 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&display=swap");
+
+/*FONTS*/
+
+@font-face {
+  font-family: "Alte Haas Grotesk";
+  src: url("/fonts/AlteHaasGrotesk-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alte Haas Grotesk";
+  src: url("/fonts/AlteHaasGrotesk-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ==========================================================================
    index.css — base del sistema visual de "hoy"
@@ -44,9 +61,9 @@
   --radius-pill: 999px;
 
   /* --- tipografía ----------------------------------------------------- */
-  --font-ui: "Instrument Sans", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, sans-serif;
-  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-ui: "Alte Haas Grotesk", "Helvetica Neue", Helvetica, Arial,
+    system-ui, sans-serif;
+  --font-display: var(--font-ui);
 
   /* --- espaciado ------------------------------------------------------ */
   --sp-1: 4px;
