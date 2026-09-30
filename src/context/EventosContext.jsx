@@ -4,6 +4,7 @@ import {
   listarEventos,
   crearEventoApi,
   eliminarEventoApi,
+  editarEventoApi,
   editarGestionApi,
   eliminarGestionApi,
 } from '../lib/api.js'
@@ -124,6 +125,35 @@ export function EventosProvider({ children }) {
     },
     [anotar, eventos],
   )
+  
+  const editarEvento = useCallback(
+    async (eventoId, cambios) => {
+      const payload = {}
+      if (cambios.nombre != null) payload.nombre = cambios.nombre.trim()
+      if (cambios.fecha != null) payload.fecha = cambios.fecha
+      if (Object.keys(payload).length === 0) return
+      await editarEventoApi(eventoId, payload)
+      setEventos((prev) => prev.map((ev) => (ev.id === eventoId ? { ...ev, ...payload } : ev)))
+      anotar('Editaste', payload.nombre || '')
+    },
+    [anotar],
+  )
+
+  // Edición "en frío" de los datos de una gestión (nombre/fecha/hora/horas),
+  // a diferencia de reprogramarGestion, que además reabre la gestión.
+  const editarGestion = useCallback(
+    async (gestionId, cambios) => {
+      const payload = {}
+      if (cambios.nombre != null) payload.nombre = cambios.nombre.trim()
+      if (cambios.fecha != null) payload.fecha = cambios.fecha
+      if (cambios.hora != null) payload.hora = cambios.hora
+      if (cambios.horas != null) payload.horas = Number(cambios.horas)
+      if (Object.keys(payload).length === 0) return
+      await editarGestionApi(gestionId, payload)
+      cambiarGestion(gestionId, payload)
+    },
+    [cambiarGestion],
+  )
 
   const eliminarGestion = useCallback(
     async (gestionId) => {
@@ -195,6 +225,8 @@ export function EventosProvider({ children }) {
       obtenerGestion,
       nombreDuplicado,
       agregarEvento,
+      editarEvento,
+      editarGestion,
       eliminarEvento,
       eliminarGestion,
       marcarGestion,
@@ -205,7 +237,7 @@ export function EventosProvider({ children }) {
     [
       eventos, gestiones, limiteHoras, estadoCarga, cargar, bitacora, anotar,
       gestionesDelDia, horasDelDia, obtenerEvento, obtenerGestion, nombreDuplicado,
-      agregarEvento, eliminarEvento, eliminarGestion, marcarGestion, guardarNota,
+      agregarEvento,editarEvento, editarGestion, eliminarEvento, eliminarGestion, marcarGestion, guardarNota,
       reprogramarGestion, posponerGestion,
     ],
   )
