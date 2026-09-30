@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
 import { fechaLarga, hoyISO } from '../lib/fechas.js'
@@ -12,13 +13,28 @@ const TABS = [
 export default function Layout() {
   const { gestionesDelDia } = useEventos()
   const pendientes = gestionesDelDia(hoyISO()).filter((g) => g.estado !== 'hecho').length
+  const [sidebarAbierta, setSidebarAbierta] = useState(true)
 
   return (
-    <div className="shell">
+    <div className={'shell' + (sidebarAbierta ? '' : ' shell--sidebar-cerrada')}>
       <a className="saltar" href="#contenido">Saltar al contenido</a>
 
       <header className="topbar">
-        <Link to="/hoy" className="brand">hoy</Link>
+        <div className="topbar__izq">
+          <button
+            type="button"
+            className="topbar__toggle"
+            onClick={() => setSidebarAbierta((abierta) => !abierta)}
+            aria-expanded={sidebarAbierta}
+            aria-controls="menu-principal"
+          >
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+              <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <span className="sr-only">Mostrar u ocultar el menú</span>
+          </button>
+          <Link to="/hoy" className="brand">Chronos</Link>
+        </div>
         <p className="date">{fechaLarga(hoyISO())}</p>
       </header>
 
@@ -26,7 +42,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <nav className="tabbar" aria-label="Secciones de la aplicación">
+      <nav className="tabbar" id="menu-principal" aria-label="Secciones de la aplicación" aria-hidden={!sidebarAbierta}>
         {TABS.map((t) => (
           <NavLink
             key={t.to}

@@ -18,7 +18,7 @@
 
 .topbar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 18px 20px 14px;
@@ -62,6 +62,32 @@
   white-space: nowrap;
 }
 
+.topbar__izq {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line-fuerte);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), color var(--t);
+}
+
+.topbar__toggle:hover {
+  background: var(--paper-2);
+  border-color: var(--accent);
+  color: var(--ink);
+}
 /* --- Contenido -------------------------------------------------------- */
 
 .content {
@@ -151,17 +177,140 @@
   translate: 0 -1px;
 }
 
-/* --- Pantallas anchas: el marco deja de ser un teléfono ---------------- */
+/* ----Pantallas anchas----------*/
 
+/* Punto intermedio (tablets, ventanas medianas): deja de verse angosto,
+   pero la barra de pestañas todavía va abajo. */
 @media (min-width: 720px) {
   .shell {
-    max-width: 560px;
+    max-width: 640px;
     border-radius: var(--radius);
     margin: 24px auto;
     min-height: calc(100% - 48px);
     border: 1px solid var(--line);
     box-shadow: var(--sombra);
     overflow: clip;
+  }
+}
+
+/* Escritorio real: la navegación pasa a un panel lateral y el contenido
+   aprovecha el ancho disponible en vez de dejarlo vacío a los lados. */
+@media (min-width: 980px) {
+  .shell {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    min-height: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "topbar topbar"
+      "tabbar content";
+    transition: grid-template-columns var(--t-lento);
+  }
+
+  .shell--sidebar-cerrada {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .topbar {
+    grid-area: topbar;
+    padding-inline: 28px;
+  }
+
+  .topbar__toggle {
+    display: inline-flex;
+  }
+  
+  .content {
+    grid-area: content;
+    padding: 28px 40px 40px;
+    /* El contenido no se estira a todo el ancho: se centra con un máximo
+       cómodo de lectura, para no dejar listas y formularios gigantes. */
+    max-width: 760px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .tabbar {
+    grid-area: tabbar;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    min-width: 0;
+    padding: 20px 14px;
+    border-top: none;
+    border-right: 1px solid var(--line);
+    position: static;
+    backdrop-filter: none;
+    background: var(--paper-2);
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity var(--t-lento), padding var(--t);
+  }
+
+  .shell--sidebar-cerrada .tabbar {
+    padding-inline: 0;
+    border-right: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .tab {
+    flex: none;
+    padding: 10px 14px;
+    text-align: left;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+  }
+
+  .tab::after {
+    /* El indicador activo pasa de una línea superior a un borde izquierdo */
+    inset-inline: auto;
+    left: 0;
+    top: 50%;
+    bottom: 50%;
+    height: auto;
+    width: 3px;
+    transition: top var(--t), bottom var(--t);
+  }
+
+  .tab--active::after {
+    inset-inline: auto;
+    top: 4px;
+    bottom: 4px;
+  }
+
+  .tab:hover {
+    background: var(--paper-dim);
+  }
+}
+
+/* ==========================================================================
+   Teléfono en horizontal — poca altura, mucho ancho
+   ========================================================================== */
+
+@media (max-width: 979px) and (orientation: landscape) and (max-height: 500px) {
+  .topbar {
+    padding: 10px 20px;
+  }
+
+  .date {
+    display: none;
+  }
+
+  .content {
+    padding: 14px 20px 16px;
+  }
+
+  .tab {
+    padding: 9px 0 10px;
+    font-size: 13px;
   }
 }
 
