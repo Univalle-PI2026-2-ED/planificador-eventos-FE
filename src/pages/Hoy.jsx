@@ -115,26 +115,6 @@ export default function Hoy() {
           </p>
         </>
       )}
-
-      <p className="hoy__pie">
-        Estados de la pantalla (demo):{' '}
-        {[
-          ['auto', 'con datos'],
-          ['vacio', 'vacío'],
-          ['cargando', 'cargando'],
-          ['error', 'error'],
-        ].map(([clave, texto]) => (
-          <button
-            key={clave}
-            type="button"
-            className="btn--texto"
-            aria-current={demo === clave ? 'true' : undefined}
-            onClick={() => setDemo(clave)}
-          >
-            {texto}
-          </button>
-        ))}
-      </p>
     </div>
   )
 }
