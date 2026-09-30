@@ -44,3 +44,11 @@ export function editarGestionApi(id, cambios) {
 export function eliminarGestionApi(id) {
   return fetch(`${BASE_URL}/gestiones/${id}/`, { method: 'DELETE' }).then(manejarRespuesta)
 }
+
+export function editarEventoApi(id, cambios) {
+  return fetch(`${BASE_URL}/eventos/${id}/`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cambios),
+  }).then(manejarRespuesta)
+}

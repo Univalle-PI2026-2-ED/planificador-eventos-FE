@@ -79,15 +79,19 @@ async function confirmarEliminarGestion() {
       <Link to="/hoy" className="volver">Volver a hoy</Link>
       <div className="detalle__header">
         <h1 ref={refTitulo} tabIndex={-1}>{evento.nombre}</h1>
-        <button
-          type="button"
-          className="btn btn--peligro btn--sm"
-          onClick={() => setEliminandoEvento(true)}
-        >
-          Eliminar evento
-        </button>
+        <div className="detalle__acciones">
+          <Link to={`/evento/${evento.id}/editar`} className="btn btn--fantasma btn--sm">
+            Editar evento
+          </Link>
+          <button
+            type="button"
+            className="btn btn--peligro btn--sm"
+            onClick={() => setEliminandoEvento(true)}
+          >
+            Eliminar evento
+          </button>
+        </div>
       </div>
-
 
       <p className="detalle__meta">
         <span>{fechaLarga(evento.fecha)}</span>

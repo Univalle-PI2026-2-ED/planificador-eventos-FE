@@ -51,6 +51,12 @@
   margin-bottom: 0;
 }
 
+.detalle__acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .detalle__meta {
   display: flex;
   flex-wrap: wrap;
