@@ -212,3 +212,85 @@
   font-size: 12px;
   color: var(--err, #dc2626);
 }
+
+/* ==========================================================================
+   REDISEÑO — crear evento
+   ========================================================================== */
+.crear__title {
+  font-size: 34px;
+}
+
+.crear__intro {
+  max-width: 60ch;
+  font-size: 15px;
+}
+
+.crear__form {
+  gap: 20px;
+}
+
+.bloque {
+  align-content: start;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--paper-2), var(--paper-dim));
+  box-shadow: var(--sombra-suave);
+}
+
+.bloque__titulo {
+  font-size: 18px;
+  font-weight: 700;
+  padding-bottom: 12px;
+}
+
+.subtarea {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.subtarea input {
+  border-radius: 8px;
+}
+
+.total {
+  padding: 14px 16px;
+  border-radius: 12px;
+}
+
+.total__cifra {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+@media (max-width: 1099px) {
+  .crear__form {
+    max-width: 760px;
+  }
+}
+
+/* Escritorio: el evento a la izquierda, el plan de trabajo a la derecha */
+@media (min-width: 1100px) {
+  .crear__form {
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+    gap: 20px 28px;
+    align-items: start;
+  }
+
+  .crear__form > .bloque:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .crear__form > .bloque:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .crear__acciones {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}

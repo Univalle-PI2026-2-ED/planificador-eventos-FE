@@ -93,3 +93,303 @@
   font-size: 14px;
   color: var(--ink);
 }
+
+/* ==========================================================================
+   REDISEÑO — login y registro
+   ========================================================================== */
+.login {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 520px at 80% -10%, rgba(217, 154, 43, 0.16), transparent 60%),
+    radial-gradient(700px 480px at 0% 100%, rgba(138, 171, 108, 0.09), transparent 60%),
+    var(--bg);
+}
+
+/* Cuadrícula tenue que se desvanece hacia los bordes */
+.login::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login > * {
+  position: relative;
+}
+
+.login__caja {
+  max-width: 440px;
+}
+
+.login__title {
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.login__form {
+  position: relative;
+  padding: 30px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--paper-2), var(--paper));
+  box-shadow: var(--sombra), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+/* Filo de acento en el borde superior de la tarjeta */
+.login__form::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  top: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--degradado-acento);
+}
+
+.login__aviso {
+  border-radius: 12px;
+}
+
+/* Login y registro: mismos brillos, pero dejando ver la arena del fondo */
+.login {
+  background:
+    radial-gradient(900px 520px at 80% -10%, rgba(217, 154, 43, 0.16), transparent 60%),
+    radial-gradient(700px 480px at 0% 100%, rgba(138, 171, 108, 0.09), transparent 60%);
+}
+
+/* ==========================================================================
+   LOGIN — galaxia en movimiento + engranajes en las esquinas
+   Capas (de atrás hacia adelante):
+     .login::before        nebulosa dorada que gira muy despacio
+     .login__top::before   campo de estrellas que titila y se desplaza
+     .login::after         engranaje grande, esquina superior derecha
+     .login__top::after    engranaje chico engranado con el anterior
+     .login__main::before  engranaje grande, esquina inferior izquierda
+     .login__main::after   engranaje chico engranado con el anterior
+   Cada par grande/chico está calculado para engranar de verdad: el chico
+   tiene la mitad de dientes, gira al revés y el doble de rápido.
+   ========================================================================== */
+.login {
+  --gs: 0.58; /* escala de los engranajes */
+  isolation: isolate;
+  background:
+    radial-gradient(60% 50% at 78% 12%, rgba(150, 95, 25, 0.2), transparent 70%),
+    radial-gradient(55% 45% at 12% 92%, rgba(120, 76, 24, 0.18), transparent 70%),
+    #070605;
+}
+
+@media (max-width: 900px) {
+  .login {
+    --gs: 0.7;
+  }
+}
+
+@media (max-width: 520px) {
+  .login {
+    --gs: 0.5;
+  }
+}
+
+.login__top {
+  border-bottom-color: rgba(233, 181, 89, 0.1);
+}
+
+/* --- Nebulosa: manchas doradas dispuestas en espiral que orbitan el centro ---- */
+.login::before {
+  content: "";
+  position: absolute;
+  z-index: -3;
+  inset: auto;
+  width: 160vmax;
+  height: 160vmax;
+  left: 50%;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  margin: -80vmax 0 0 -80vmax;
+  background-image:
+    radial-gradient(circle 14vmax at 50% 50%, rgba(233, 181, 89, 0.1), transparent 100%),
+    radial-gradient(ellipse 11.4% 7.1% at 53% 50%, rgba(233, 181, 89, 0.11) 0, transparent 72%),
+    radial-gradient(ellipse 15.5% 9.6% at 54% 53.1%, rgba(132, 82, 24, 0.16) 0, transparent 72%),
+    radial-gradient(ellipse 10.4% 6.4% at 49.8% 56.3%, rgba(176, 112, 30, 0.19) 0, transparent 72%),
+    radial-gradient(ellipse 12.8% 7.9% at 41.8% 55.6%, rgba(233, 181, 89, 0.12) 0, transparent 72%),
+    radial-gradient(ellipse 16% 9.9% at 36.2% 49.4%, rgba(132, 82, 24, 0.15) 0, transparent 72%),
+    radial-gradient(ellipse 13.3% 8.2% at 39.2% 40.6%, rgba(132, 82, 24, 0.16) 0, transparent 72%),
+    radial-gradient(ellipse 10.9% 6.8% at 51.7% 35.7%, rgba(233, 181, 89, 0.12) 0, transparent 72%),
+    radial-gradient(ellipse 15.6% 9.7% at 67% 39.6%, rgba(132, 82, 24, 0.17) 0, transparent 72%),
+    radial-gradient(ellipse 14% 8.7% at 74.4% 52.2%, rgba(176, 112, 30, 0.12) 0, transparent 72%);
+  background-repeat: no-repeat;
+  pointer-events: none;
+  will-change: transform;
+  animation:
+    eng-galaxia 60s linear infinite,
+    eng-respira 14s ease-in-out infinite alternate;
+}
+
+@keyframes eng-galaxia {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes eng-respira {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Estrellas: titilan y se desplazan en diagonal sin cortes ------------------- */
+.login__top::before {
+  content: "";
+  position: fixed;
+  z-index: -2;
+  left: -480px;
+  top: -480px;
+  right: 0;
+  bottom: 0;
+  background-size: 480px 480px;
+  background-repeat: repeat;
+  background-image:
+    radial-gradient(circle 1.2px at 128px 290px, rgba(255, 240, 214, 0.71) 0 40%, transparent 100%),
+    radial-gradient(circle 1.1px at 59px 355px, rgba(255, 240, 214, 0.48) 0 40%, transparent 100%),
+    radial-gradient(circle 0.8px at 138px 138px, rgba(217, 154, 43, 0.74) 0 40%, transparent 100%),
+    radial-gradient(circle 1.5px at 422px 107px, rgba(255, 240, 214, 0.79) 0 40%, transparent 100%),
+    radial-gradient(circle 1px at 256px 52px, rgba(233, 181, 89, 0.53) 0 40%, transparent 100%),
+    radial-gradient(circle 1.6px at 458px 422px, rgba(255, 240, 214, 0.63) 0 40%, transparent 100%),
+    radial-gradient(circle 0.9px at 121px 25px, rgba(233, 181, 89, 0.66) 0 40%, transparent 100%),
+    radial-gradient(circle 1px at 260px 363px, rgba(255, 240, 214, 0.42) 0 40%, transparent 100%),
+    radial-gradient(circle 0.9px at 442px 205px, rgba(255, 255, 255, 0.69) 0 40%, transparent 100%),
+    radial-gradient(circle 1.6px at 203px 257px, rgba(217, 154, 43, 0.78) 0 40%, transparent 100%),
+    radial-gradient(circle 0.8px at 267px 205px, rgba(255, 255, 255, 0.74) 0 40%, transparent 100%),
+    radial-gradient(circle 1.4px at 361px 363px, rgba(255, 255, 255, 0.44) 0 40%, transparent 100%),
+    radial-gradient(circle 1px at 58px 273px, rgba(233, 181, 89, 0.79) 0 40%, transparent 100%),
+    radial-gradient(circle 1.5px at 363px 176px, rgba(255, 255, 255, 0.4) 0 40%, transparent 100%),
+    radial-gradient(circle 1px at 421px 346px, rgba(255, 240, 214, 0.52) 0 40%, transparent 100%),
+    radial-gradient(circle 0.8px at 189px 120px, rgba(217, 154, 43, 0.71) 0 40%, transparent 100%);
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation:
+    eng-deriva 360s linear infinite,
+    eng-titila 5s ease-in-out infinite alternate;
+}
+
+@keyframes eng-deriva {
+  to {
+    translate: 480px 480px;
+  }
+}
+
+@keyframes eng-titila {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Engranajes: base común --------------------------------------------------------- */
+.login::after,
+.login__top::after,
+.login__main::before,
+.login__main::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  pointer-events: none;
+  filter: drop-shadow(0 0 10px rgba(217, 154, 43, 0.22));
+  will-change: transform;
+}
+
+/* Grandes: 400 px de diseño, centro a 70 px de la esquina (media máscara fuera de pantalla) */
+.login::after,
+.login__main::before {
+  width: calc(400px * var(--gs));
+  height: calc(400px * var(--gs));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' fill='none' stroke='%23e0ab4a' stroke-opacity='.34' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M365.4 185.7L389.7 190.2L389.7 209.8L365.4 214.3A166 166 0 0 1 361.7 237.5L383.5 249.3L377.4 268L352.9 264.7A166 166 0 0 1 342.2 285.6L359.3 303.6L347.7 319.5L325.4 308.8A166 166 0 0 1 308.8 325.4L319.5 347.7L303.6 359.3L285.6 342.2A166 166 0 0 1 264.7 352.9L268 377.4L249.3 383.5L237.5 361.7A166 166 0 0 1 214.3 365.4L209.8 389.7L190.2 389.7L185.7 365.4A166 166 0 0 1 162.5 361.7L150.7 383.5L132 377.4L135.3 352.9A166 166 0 0 1 114.4 342.2L96.4 359.3L80.5 347.7L91.2 325.4A166 166 0 0 1 74.6 308.8L52.3 319.5L40.7 303.6L57.8 285.6A166 166 0 0 1 47.1 264.7L22.6 268L16.5 249.3L38.3 237.5A166 166 0 0 1 34.6 214.3L10.3 209.8L10.3 190.2L34.6 185.7A166 166 0 0 1 38.3 162.5L16.5 150.7L22.6 132L47.1 135.3A166 166 0 0 1 57.8 114.4L40.7 96.4L52.3 80.5L74.6 91.2A166 166 0 0 1 91.2 74.6L80.5 52.3L96.4 40.7L114.4 57.8A166 166 0 0 1 135.3 47.1L132 22.6L150.7 16.5L162.5 38.3A166 166 0 0 1 185.7 34.6L190.2 10.3L209.8 10.3L214.3 34.6A166 166 0 0 1 237.5 38.3L249.3 16.5L268 22.6L264.7 47.1A166 166 0 0 1 285.6 57.8L303.6 40.7L319.5 52.3L308.8 74.6A166 166 0 0 1 325.4 91.2L347.7 80.5L359.3 96.4L342.2 114.4A166 166 0 0 1 352.9 135.3L377.4 132L383.5 150.7L361.7 162.5A166 166 0 0 1 365.4 185.7Z'/%3E%3Ccircle cx='200' cy='200' r='142'/%3E%3Ccircle cx='200' cy='200' r='122'/%3E%3Ccircle cx='200' cy='200' r='44'/%3E%3Ccircle cx='200' cy='200' r='15'/%3E%3Cpath d='M241 215.9L309.7 253.5'/%3E%3Cpath d='M234.3 227.6L301.1 268.2'/%3E%3Cpath d='M206.7 243.5L208.5 321.7'/%3E%3Cpath d='M193.3 243.5L191.5 321.7'/%3E%3Cpath d='M165.7 227.6L98.9 268.2'/%3E%3Cpath d='M159 215.9L90.3 253.5'/%3E%3Cpath d='M159 184.1L90.3 146.5'/%3E%3Cpath d='M165.7 172.4L98.9 131.8'/%3E%3Cpath d='M193.3 156.5L191.5 78.3'/%3E%3Cpath d='M206.7 156.5L208.5 78.3'/%3E%3Cpath d='M234.3 172.4L301.1 131.8'/%3E%3Cpath d='M241 184.1L309.7 146.5'/%3E%3C/svg%3E");
+  animation: eng-gira 120s linear infinite;
+}
+
+/* Chicos: mitad de dientes, giran al revés y al doble de velocidad */
+.login__top::after,
+.login__main::after {
+  width: calc(220px * var(--gs));
+  height: calc(220px * var(--gs));
+  rotate: 18deg; /* medio diente de desfase para que engranen */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220' fill='none' stroke='%23e0ab4a' stroke-opacity='.34' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M185.9 96.8L210.5 99.5L210.5 120.5L185.9 123.2A77 77 0 0 1 179.1 143.9L197.4 160.6L185.1 177.5L163.6 165.3A77 77 0 0 1 146 178L151 202.3L131.1 208.8L120.8 186.2A77 77 0 0 1 99.2 186.2L88.9 208.8L69 202.3L74 178A77 77 0 0 1 56.4 165.3L34.9 177.5L22.6 160.6L40.9 143.9A77 77 0 0 1 34.1 123.2L9.5 120.5L9.5 99.5L34.1 96.8A77 77 0 0 1 40.9 76.1L22.6 59.4L34.9 42.5L56.4 54.7A77 77 0 0 1 74 42L69 17.7L88.9 11.2L99.2 33.8A77 77 0 0 1 120.8 33.8L131.1 11.2L151 17.7L146 42A77 77 0 0 1 163.6 54.7L185.1 42.5L197.4 59.4L179.1 76.1A77 77 0 0 1 185.9 96.8Z'/%3E%3Ccircle cx='110' cy='110' r='58'/%3E%3Ccircle cx='110' cy='110' r='22'/%3E%3Ccircle cx='110' cy='110' r='8'/%3E%3Cpath d='M132 110L168 110'/%3E%3Cpath d='M116.8 130.9L127.9 165.2'/%3E%3Cpath d='M92.2 122.9L63.1 144.1'/%3E%3Cpath d='M92.2 97.1L63.1 75.9'/%3E%3Cpath d='M116.8 89.1L127.9 54.8'/%3E%3C/svg%3E");
+  animation: eng-gira-chico 60s linear infinite;
+}
+
+@keyframes eng-gira {
+  to {
+    rotate: var(--giro);
+  }
+}
+
+@keyframes eng-gira-chico {
+  from {
+    rotate: 18deg;
+  }
+  to {
+    rotate: var(--giro);
+  }
+}
+
+/* Esquina superior derecha: grande en sentido horario, chico a su izquierda */
+.login::after {
+  top: calc(-130px * var(--gs));
+  right: calc(-130px * var(--gs));
+  --giro: 360deg;
+}
+
+.login__top::after {
+  top: calc(-40px * var(--gs));
+  right: calc(227px * var(--gs));
+  --giro: -342deg;
+}
+
+/* Esquina inferior izquierda: grande en sentido antihorario, chico a su derecha */
+.login__main::before {
+  bottom: calc(-130px * var(--gs));
+  left: calc(-130px * var(--gs));
+  --giro: -360deg;
+}
+
+.login__main::after {
+  bottom: calc(-40px * var(--gs));
+  left: calc(227px * var(--gs));
+  --giro: 378deg;
+}
+
+/* --- Tarjeta de cristal oscuro, como en la referencia --------------------------------- */
+.login__form {
+  background: linear-gradient(180deg, rgba(36, 30, 24, 0.72), rgba(20, 17, 14, 0.74));
+  border-color: rgba(233, 181, 89, 0.16);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  backdrop-filter: blur(16px) saturate(125%);
+}
+
+/* Quien pide menos movimiento ve la escena quieta */
+@media (prefers-reduced-motion: reduce) {
+  .login::before,
+  .login::after,
+  .login__top::before,
+  .login__top::after,
+  .login__main::before,
+  .login__main::after {
+    animation: none;
+  }
+}

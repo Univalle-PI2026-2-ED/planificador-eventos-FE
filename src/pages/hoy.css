@@ -373,3 +373,443 @@
   color: var(--err);
   font-weight: 600;
 }
+
+/* ==========================================================================
+   REDISEÑO — vista "Tu día"
+   ========================================================================== */
+.hoy__header {
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.hoy__title {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.hoy__sub {
+  font-size: 15px;
+}
+
+.btn--accion {
+  margin-top: 0;
+  padding: 11px 20px;
+}
+
+/* --- Carga del día como tarjeta --------------------------------------------- */
+.carga {
+  gap: 12px;
+  margin: 22px 0 8px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--paper-2), var(--paper-dim));
+  box-shadow: var(--sombra-suave);
+}
+
+.carga__datos {
+  align-items: center;
+}
+
+.carga__datos > span:first-child {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.carga__horas {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.carga__barra {
+  height: 10px;
+  background: var(--bg);
+}
+
+.carga__relleno {
+  background: var(--degradado-acento);
+  box-shadow: 0 0 14px rgba(217, 154, 43, 0.4);
+}
+
+.carga--excedida .carga__relleno {
+  background: linear-gradient(90deg, #f08a73, var(--err));
+  box-shadow: 0 0 14px rgba(224, 112, 90, 0.4);
+}
+
+.carga__limite {
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+  opacity: 0.7;
+}
+
+/* --- Filtros ------------------------------------------------------------------ */
+.filtros {
+  margin: 24px 0 10px;
+}
+
+.filtro {
+  padding: 8px 16px;
+  background: var(--paper-dim);
+}
+
+.filtro:hover {
+  background: var(--paper-2);
+}
+
+.filtro[aria-pressed="true"] {
+  background: var(--degradado-acento);
+  border-color: transparent;
+  color: var(--accent-ink);
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(217, 154, 43, 0.22);
+}
+
+.filtros__evento select {
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--paper-dim);
+}
+
+.filtros__resumen {
+  margin-bottom: 20px;
+}
+
+/* --- Grupos --------------------------------------------------------------------- */
+.grupo {
+  margin-bottom: 34px;
+}
+
+.grupo__titulo {
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.grupo__conteo {
+  padding: 1px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--paper-2);
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.grupo--urgente .grupo__titulo::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(217, 154, 43, 0.18);
+}
+
+/* --- Gestiones como tarjetas en cuadrícula ----------------------------------------- */
+.lista-eventos {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+
+.evento {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "hora titulo etiqueta"
+    "meta meta   meta";
+  column-gap: 12px;
+  row-gap: 10px;
+  align-items: center;
+  padding: 16px 18px 16px 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-dim);
+  box-shadow: var(--sombra-suave);
+  overflow: hidden;
+  transition: background var(--t), border-color var(--t), transform var(--t),
+    box-shadow var(--t);
+}
+
+.evento::after {
+  display: none;
+}
+
+.evento::before {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: var(--line-fuerte);
+}
+
+.evento:hover,
+.evento:focus-visible {
+  background: var(--paper-2);
+  border-color: var(--line-fuerte);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-hover);
+}
+
+.evento:hover::before {
+  scale: 1;
+}
+
+.evento__hora {
+  text-align: left;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.evento__titulo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.evento__meta {
+  font-size: 13px;
+}
+
+.evento--vencido {
+  background: linear-gradient(135deg, var(--err-bg), var(--paper-dim));
+  border-color: var(--err-line);
+}
+
+.evento--vencido:hover {
+  background: linear-gradient(135deg, var(--err-bg), var(--paper-2));
+  border-color: var(--err);
+}
+
+.evento--urgente {
+  background: linear-gradient(135deg, var(--accent-bg), var(--paper-dim));
+  border-color: var(--accent-line);
+}
+
+.evento--urgente:hover {
+  background: linear-gradient(135deg, var(--accent-bg), var(--paper-2));
+  border-color: var(--accent);
+}
+
+.evento--hecho {
+  opacity: 0.72;
+}
+
+/* --- Carga (esqueleto) -------------------------------------------------------------- */
+.skeleton-fila {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-dim);
+}
+
+/* --- Reglas de prioridad --------------------------------------------------------------- */
+.reglas {
+  margin-top: 12px;
+  padding: 4px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-dim);
+}
+
+.reglas summary {
+  padding: 14px 0;
+  font-weight: 600;
+}
+
+.reglas[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.reglas ul {
+  margin: 14px 0 12px;
+}
+
+.reglas p {
+  padding-bottom: 14px;
+}
+
+/* --- Escritorio: lista a la izquierda, carga del día fija a la derecha ------------------- */
+@media (min-width: 1100px) {
+  .hoy:has(> .carga) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 36px;
+    align-items: start;
+  }
+
+  .hoy:has(> .carga) > * {
+    grid-column: 1;
+  }
+
+  .hoy:has(> .carga) > .hoy__header {
+    grid-column: 1 / -1;
+  }
+
+  .hoy:has(> .carga) > .carga {
+    grid-column: 2;
+    grid-row: 2 / span 12;
+    margin-top: 6px;
+    position: sticky;
+    top: 96px;
+  }
+}
+
+/* ==========================================================================
+   TIEMPO — vista "Tu día"
+   ========================================================================== */
+
+/* --- Las tarjetas caen en cascada, como granos de arena ----------------------------- */
+.lista-eventos > li {
+  animation: hg-entra 560ms cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+
+.lista-eventos > li:nth-child(2) { animation-delay: 60ms; }
+.lista-eventos > li:nth-child(3) { animation-delay: 120ms; }
+.lista-eventos > li:nth-child(4) { animation-delay: 180ms; }
+.lista-eventos > li:nth-child(5) { animation-delay: 240ms; }
+.lista-eventos > li:nth-child(6) { animation-delay: 300ms; }
+.lista-eventos > li:nth-child(7) { animation-delay: 360ms; }
+.lista-eventos > li:nth-child(8) { animation-delay: 420ms; }
+.lista-eventos > li:nth-child(n + 9) { animation-delay: 480ms; }
+
+/* --- Títulos de grupo: una línea que se desvanece, como una línea de tiempo --------- */
+.grupo__titulo::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  margin-left: 6px;
+  background: linear-gradient(90deg, var(--line-fuerte), transparent);
+}
+
+/* --- La hora lleva un mini reloj: el minutero avanza solo --------------------------- */
+.evento__hora {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.evento__hora::before {
+  content: "";
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  background: linear-gradient(currentColor, currentColor) 50% 1px / 1.5px 4.5px no-repeat;
+  animation: reloj-minutero 60s linear infinite;
+}
+
+@keyframes reloj-minutero {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* Lo urgente corre más rápido, lo vencido va hacia atrás y lo hecho se detiene */
+.evento--urgente .evento__hora::before {
+  animation-duration: 4s;
+}
+
+.evento--vencido .evento__hora::before {
+  animation-duration: 12s;
+  animation-direction: reverse;
+}
+
+.evento--hecho .evento__hora::before {
+  animation-play-state: paused;
+}
+
+/* --- Pulso de la barra lateral: urgente late en ámbar, vencido en rojo ---------------- */
+@keyframes barra-ambar {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(217, 154, 43, 0);
+  }
+  50% {
+    box-shadow: 0 0 14px 1px rgba(217, 154, 43, 0.65);
+  }
+}
+
+@keyframes barra-rojo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(224, 112, 90, 0);
+  }
+  50% {
+    box-shadow: 0 0 14px 1px rgba(224, 112, 90, 0.6);
+  }
+}
+
+.evento--urgente::before {
+  animation: barra-ambar 2.6s ease-in-out infinite;
+}
+
+.evento--vencido::before {
+  animation: barra-rojo 3.4s ease-in-out infinite;
+}
+
+/* --- Etiqueta urgente: un punto que "hace tic" como un segundero ------------------------ */
+.etiqueta--urgente::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-ink);
+  animation: etiqueta-tic 1s steps(1, end) infinite;
+}
+
+@keyframes etiqueta-tic {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* --- Carga del día: regla con marcas y luz que recorre la parte llena ------------------ */
+.carga__barra {
+  margin-bottom: 14px;
+}
+
+.carga__barra::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  height: 7px;
+  background:
+    repeating-linear-gradient(90deg, var(--ink-3) 0 1px, transparent 1px 10%) 0 0 / 100% 7px no-repeat,
+    repeating-linear-gradient(90deg, var(--line-fuerte) 0 1px, transparent 1px 2%) 0 0 / 100% 4px no-repeat;
+  pointer-events: none;
+}
+
+.carga__relleno {
+  position: relative;
+  overflow: hidden;
+}
+
+.carga__relleno::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  translate: -100% 0;
+  animation: barra-luz 4.5s ease-in-out infinite;
+}

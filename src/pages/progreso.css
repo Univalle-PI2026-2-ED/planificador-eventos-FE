@@ -156,3 +156,155 @@
   color: var(--ink-3);
   padding: 8px 0;
 }
+
+/* ==========================================================================
+   REDISEÑO — progreso
+   ========================================================================== */
+.progreso__title {
+  font-size: 34px;
+  margin-bottom: 0;
+}
+
+.progreso__intro {
+  max-width: 60ch;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.avance {
+  gap: 14px;
+  padding: 22px;
+  border-radius: 16px;
+  border-top: 3px solid var(--accent);
+  background: linear-gradient(180deg, var(--paper-2), var(--paper-dim));
+  box-shadow: var(--sombra-suave);
+  transition: transform var(--t), box-shadow var(--t), border-color var(--t);
+}
+
+.avance:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-hover);
+}
+
+.avance__nombre {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.avance__pct {
+  font-size: 46px;
+  font-weight: 700;
+  background: var(--degradado-acento);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.leyenda {
+  width: fit-content;
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--paper-dim);
+}
+
+.bitacora__titulo {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bitacora__lista {
+  padding: 4px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper-dim);
+}
+
+.bitacora__vacio {
+  padding: 18px 20px;
+  border: 1px dashed var(--line-fuerte);
+  border-radius: 14px;
+}
+
+.hito {
+  grid-template-columns: 56px 1fr;
+  padding: 14px 0;
+}
+
+/* Tarjetas de avance en cuadrícula; el resto ocupa todo el ancho */
+@media (min-width: 760px) {
+  .progreso {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 16px;
+  }
+
+  .progreso > :not(.avance) {
+    grid-column: 1 / -1;
+  }
+
+  .progreso > .avance {
+    margin-bottom: 0;
+  }
+
+  .progreso__title {
+    margin-bottom: -8px;
+  }
+
+  .bitacora {
+    margin-top: 14px;
+  }
+}
+
+/* ==========================================================================
+   TIEMPO — progreso
+   ========================================================================== */
+
+/* Las tarjetas de avance caen en cascada */
+.progreso > .avance {
+  animation: hg-entra 600ms cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+
+.progreso > .avance:nth-child(4) { animation-delay: 80ms; }
+.progreso > .avance:nth-child(5) { animation-delay: 160ms; }
+.progreso > .avance:nth-child(6) { animation-delay: 240ms; }
+.progreso > .avance:nth-child(n + 7) { animation-delay: 320ms; }
+
+/* La bitácora se convierte en una línea de tiempo con puntos de luz */
+.hito {
+  position: relative;
+  border-bottom: 0;
+  padding: 14px 0;
+}
+
+.hito::before {
+  content: "";
+  position: absolute;
+  left: 59px;
+  top: 20px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg), 0 0 12px rgba(217, 154, 43, 0.5);
+}
+
+.hito::after {
+  content: "";
+  position: absolute;
+  left: 62px;
+  top: 30px;
+  bottom: -10px;
+  width: 1px;
+  background: linear-gradient(var(--line-fuerte), transparent);
+}
+
+.hito:last-child::after {
+  display: none;
+}
+
+.hito__texto {
+  padding-left: 10px;
+}
