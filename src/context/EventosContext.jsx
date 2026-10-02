@@ -8,6 +8,7 @@ import {
   editarGestionApi,
   eliminarGestionApi,
 } from '../lib/api.js'
+import { useAuth } from './AuthContext.jsx'
 
 // Modelo: un evento tiene un plan de trabajo (gestiones logísticas) y cada
 // gestión tiene día, hora, horas estimadas, estado y nota.
@@ -23,6 +24,7 @@ const nuevoId = () =>
 const EventosContext = createContext(null)
 
 export function EventosProvider({ children }) {
+  const { autenticado } = useAuth()
   const [eventos, setEventos] = useState([])
   const [limiteHoras, setLimiteHoras] = useState(LIMITE_POR_DEFECTO)
   const [estadoCarga, setEstadoCarga] = useState('cargando') // cargando | exito | error
@@ -38,8 +40,17 @@ export function EventosProvider({ children }) {
       .catch(() => setEstadoCarga('error'))
   }, [])
 
-  useEffect(() => cargar(), [cargar])
-
+    useEffect(() => {
+    if (autenticado) {
+      cargar()
+    } else {
+      // sin sesión no hay datos: evita que el siguiente usuario vea los del anterior
+      setEventos([])
+      setBitacora([])
+      setEstadoCarga('cargando')
+    }
+  }, [autenticado, cargar])
+  
   const anotar = useCallback((accion, destacado, cola = '') => {
     setBitacora((prev) => [
       { id: nuevoId(), hora: aHora(minutosAhora()), accion, destacado, cola },
