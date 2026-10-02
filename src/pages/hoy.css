@@ -336,3 +336,40 @@
   font-size: 13px;
   color: var(--ink-3);
 }
+
+/* --- Reglas de prioridad documentadas (US-04) -------------------------- */
+
+.reglas {
+  margin-top: var(--sp-5);
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.reglas summary {
+  padding: var(--sp-1) 0;
+  color: var(--ink-2);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.reglas summary:hover {
+  color: var(--ink);
+}
+
+.reglas ul {
+  display: grid;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0 var(--sp-2);
+  padding-left: var(--sp-5);
+}
+
+.reglas p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.evento__atraso {
+  color: var(--err);
+  font-weight: 600;
+}

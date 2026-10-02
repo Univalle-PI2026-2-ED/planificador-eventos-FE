@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
-import { fechaLarga, formatoHoras, hoyISO } from '../lib/fechas.js'
-import { clasificar, cuantoFalta, ETIQUETA, PRIORIDAD } from '../lib/prioridad.js'
+import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
+import { clasificar, cuantoFalta, esAtrasada, ETIQUETA, PRIORIDAD, UMBRAL_URGENTE_MIN } from '../lib/prioridad.js'
+import { useReloj } from '../lib/useReloj.js'
 import './hoy.css'
 
 // Filtros básicos (US-05): todo ocurre en el cliente, sobre las gestiones de hoy.
@@ -24,7 +25,8 @@ const plural = (n) => `${n} ${n === 1 ? 'gestión' : 'gestiones'}`
 
 // T2: la vista "Hoy" separa lo que exige acción de lo que puede esperar.
 export default function Hoy() {
-  const { estadoCarga, cargar, gestionesDelDia, horasDelDia, limiteHoras } = useEventos()
+  const { estadoCarga, cargar, gestiones: todas, gestionesDelDia, horasDelDia, limiteHoras } = useEventos() 
+  useReloj()
 
   // TODO (evidencia Sprint 0): este conmutador es solo para capturar los cuatro
   // estados de pantalla. Cuando la API sea real, basta con estadoCarga.
@@ -35,7 +37,16 @@ export default function Hoy() {
   const refTodas = useRef(null)
 
   const hoy = hoyISO()
-  const gestiones = gestionesDelDia(hoy).map((g) => ({ ...g, clase: clasificar(g) }))
+    // Lo vencido de días anteriores que sigue pendiente no puede desaparecer de
+  // "Hoy" solo porque cambió el día: es justo lo que más atención requiere.
+  const atrasadas = todas
+    .filter((g) => esAtrasada(g, hoy))
+    .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora))
+  const gestiones = [...atrasadas, ...gestionesDelDia(hoy)].map((g) => ({
+    ...g,
+    clase: clasificar(g),
+    atrasada: g.fecha < hoy,
+  }))
   const pendientes = gestiones.filter((g) => g.estado !== 'hecho')
 
   const estado =
@@ -205,10 +216,17 @@ export default function Hoy() {
           <Grupo titulo="Más tarde hoy" items={luego} />
           <Grupo titulo="Completadas" items={hechas} />
 
-          <p className="hoy__pie">
-            Ordenamos por hora. Se marca <strong>vencida</strong> si ya pasó su hora y{' '}
-            <strong>urgente</strong> si faltan 90 minutos o menos.
-          </p>
+          <details className="reglas">
+            <summary>¿Cómo decidimos qué es urgente?</summary>
+            <ul>
+              <li><strong>Vencida:</strong> ya pasó su hora, o es de un día anterior y sigue pendiente.</li>
+              <li><strong>Urgente:</strong> faltan {UMBRAL_URGENTE_MIN} minutos o menos.</li>
+              <li><strong>Próxima:</strong> es de hoy y falta más tiempo; va en “Más tarde hoy”.</li>
+              <li>Las pospuestas van en “Más tarde hoy” y las hechas en “Completadas”; ninguna cuenta como urgente.</li>
+              <li>En cada grupo va primero lo vencido, luego lo urgente y, a igual prioridad, por fecha y hora.</li>
+            </ul>
+            <p>La lista se actualiza sola cada minuto.</p>
+          </details>
         </>
       )}
     </div>
@@ -232,6 +250,12 @@ function Grupo({ titulo, items, destacado = false }) {
               <span className="evento__hora">{g.hora.slice(0, 5)}</span>
               <span className="evento__titulo">{g.nombre}</span>
               <span className="evento__meta">
+                {g.atrasada && (
+                  <>
+                    <strong className="evento__atraso">{mayuscula(nombreDia(g.fecha))}</strong>
+                    <i className="evento__punto" />
+                  </>
+                )}
                 {g.evento.nombre}
                 <i className="evento__punto" />
                 <span className="num">{formatoHoras(g.horas)}</span>

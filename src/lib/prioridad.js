@@ -33,3 +33,8 @@ export function cuantoFalta(gestion, ahora = minutosAhora()) {
   if (faltan < 60) return `En ${faltan} min`
   return `En ${Math.round(faltan / 60)} h`
 }
+
+// Una gestión de un día anterior que nadie cerró ni pospuso: sigue siendo
+// trabajo pendiente y debe seguir visible en "Hoy".
+export const esAtrasada = (gestion, hoy = hoyISO()) =>
+  gestion.fecha < hoy && gestion.estado === 'pendiente'
