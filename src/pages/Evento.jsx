@@ -111,7 +111,7 @@ async function confirmarEliminarGestion() {
         const delDia = evento.gestiones
           .filter((g) => g.fecha === dia)
           .sort((a, b) => a.hora.localeCompare(b.hora))
-        const horasDia = delDia.filter((g) => g.estado !== 'hecho').reduce((s, g) => s + g.horas, 0)
+        const horasDia = delDia.filter((g) => g.estado !== 'hecho').reduce((s, g) => s + Number(g.horas || 0), 0)
 
         return (
           <section key={dia}>
