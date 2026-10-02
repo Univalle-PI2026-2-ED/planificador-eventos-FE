@@ -251,7 +251,7 @@
     background: var(--paper-2);
     overflow: hidden;
     opacity: 1;
-    transition: opacity var(--t-lento), padding var(--t);
+    transition: opacity var(--t-lento), padding var(--t), visibility var(--t-lento);
   }
 
   .shell--sidebar-cerrada .tabbar {
@@ -259,6 +259,7 @@
     border-right: none;
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;
   }
 
   .tab {
