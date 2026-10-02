@@ -42,7 +42,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <nav className="tabbar" id="menu-principal" aria-label="Secciones de la aplicación" aria-hidden={!sidebarAbierta}>
+      <nav className="tabbar" id="menu-principal" aria-label="Secciones de la aplicación">
         {TABS.map((t) => (
           <NavLink
             key={t.to}
