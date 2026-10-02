@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../context/AuthContext.jsx'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEventos } from '../context/EventosContext.jsx'
 import { fechaLarga, hoyISO } from '../lib/fechas.js'
@@ -12,6 +13,7 @@ const TABS = [
 
 export default function Layout() {
   const { gestionesDelDia } = useEventos()
+  const { cerrarSesion } = useAuth()
   const pendientes = gestionesDelDia(hoyISO()).filter((g) => g.estado !== 'hecho').length
   const [sidebarAbierta, setSidebarAbierta] = useState(true)
 
@@ -35,7 +37,12 @@ export default function Layout() {
           </button>
           <Link to="/hoy" className="brand">Chronos</Link>
         </div>
-        <p className="date">{fechaLarga(hoyISO())}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <p className="date">{fechaLarga(hoyISO())}</p>
+          <button type="button" className="btn--texto" onClick={cerrarSesion}>
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       <main className="content" id="contenido" tabIndex={-1}>

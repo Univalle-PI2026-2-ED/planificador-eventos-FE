@@ -1,0 +1,46 @@
+.clave {
+  position: relative;
+}
+
+.campo .clave input {
+  width: 100%;
+  padding-right: 46px;
+}
+
+/* Edge y otros navegadores traen su propio ojo; se oculta para no duplicarlo */
+.clave input::-ms-reveal,
+.clave input::-ms-clear {
+  display: none;
+}
+
+.clave__ojo {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.clave__ojo:hover {
+  color: var(--ink);
+}
+
+.clave__ojo:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.clave__ojo svg {
+  width: 20px;
+  height: 20px;
+}

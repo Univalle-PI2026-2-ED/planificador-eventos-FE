@@ -1,3 +1,5 @@
+import { borrarSesion, tokenActual } from './sesion.js'
+
 const BASE_URL = import.meta.env.VITE_API_URL
 
 async function manejarRespuesta(res) {
@@ -8,6 +10,11 @@ async function manejarRespuesta(res) {
     } catch {
       // el error no trajo JSON (ej. 500 sin cuerpo)
     }
+    if (res.status === 401) {
+      // token vencido o inválido: se cierra la sesión
+      borrarSesion()
+      window.dispatchEvent(new Event('sesion-expirada'))
+    }
     const error = new Error('Error en la petición a la API')
     error.status = res.status
     error.detalle = detalle
@@ -17,38 +24,55 @@ async function manejarRespuesta(res) {
   return res.json()
 }
 
+function peticion(ruta, { metodo = 'GET', cuerpo, publica = false } = {}) {
+  const headers = {}
+  if (cuerpo !== undefined) headers['Content-Type'] = 'application/json'
+  const token = tokenActual()
+  if (token && !publica) headers.Authorization = `Token ${token}`
+
+  return fetch(`${BASE_URL}${ruta}`, {
+    method: metodo,
+    headers,
+    body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
+  }).then(manejarRespuesta)
+}
+
+export function loginApi({ correo, clave }) {
+  return peticion('/auth/login/', {
+    metodo: 'POST',
+    publica: true,
+    cuerpo: { email: correo.trim(), password: clave },
+  })
+}
+
+export function registroApi({ usuario, correo, clave }) {
+  return peticion('/auth/registro/', {
+    metodo: 'POST',
+    publica: true,
+    cuerpo: { username: usuario.trim(), email: correo.trim(), password: clave },
+  })
+}
+
 export function listarEventos() {
-  return fetch(`${BASE_URL}/eventos/`).then(manejarRespuesta)
+  return peticion('/eventos/')
 }
 
 export function crearEventoApi({ nombre, fecha, gestiones }) {
-  return fetch(`${BASE_URL}/eventos/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nombre, fecha, gestiones }),
-  }).then(manejarRespuesta)
+  return peticion('/eventos/', { metodo: 'POST', cuerpo: { nombre, fecha, gestiones } })
 }
 
 export function eliminarEventoApi(id) {
-  return fetch(`${BASE_URL}/eventos/${id}/`, { method: 'DELETE' }).then(manejarRespuesta)
+  return peticion(`/eventos/${id}/`, { metodo: 'DELETE' })
 }
 
 export function editarGestionApi(id, cambios) {
-  return fetch(`${BASE_URL}/gestiones/${id}/`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cambios),
-  }).then(manejarRespuesta)
+  return peticion(`/gestiones/${id}/`, { metodo: 'PATCH', cuerpo: cambios })
 }
 
 export function eliminarGestionApi(id) {
-  return fetch(`${BASE_URL}/gestiones/${id}/`, { method: 'DELETE' }).then(manejarRespuesta)
+  return peticion(`/gestiones/${id}/`, { metodo: 'DELETE' })
 }
 
 export function editarEventoApi(id, cambios) {
-  return fetch(`${BASE_URL}/eventos/${id}/`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cambios),
-  }).then(manejarRespuesta)
+  return peticion(`/eventos/${id}/`, { metodo: 'PATCH', cuerpo: cambios })
 }
