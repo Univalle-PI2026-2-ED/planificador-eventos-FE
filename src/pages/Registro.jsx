@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/contextos.js'
 import { fechaLarga, hoyISO } from '../lib/fechas.js'
 import InputClave from '../components/InputClave.jsx'
 import './login.css'

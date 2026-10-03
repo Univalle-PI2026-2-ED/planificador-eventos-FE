@@ -34,9 +34,9 @@
 }
 
 .login__title {
-  font-size: 34px;
-  margin: 0 0 8px;
-  letter-spacing: -0.02em;
+  font-size: 40px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .login__intro {
@@ -44,6 +44,9 @@
   font-size: 15px;
   color: var(--ink-2);
   max-width: 38ch;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .login__form {
@@ -310,7 +313,6 @@
   background-size: 100% 100%;
   background-position: center;
   pointer-events: none;
-  filter: drop-shadow(0 0 10px rgba(217, 154, 43, 0.22));
   will-change: transform;
 }
 
@@ -376,10 +378,10 @@
 
 /* --- Tarjeta de cristal oscuro, como en la referencia --------------------------------- */
 .login__form {
-  background: linear-gradient(180deg, rgba(36, 30, 24, 0.72), rgba(20, 17, 14, 0.74));
+  /* Sin backdrop-filter: desenfocar capas que se animan a 60 fps recalcula el
+     blur en cada cuadro. Un fondo casi opaco se ve igual y cuesta mucho menos. */
+  background: linear-gradient(180deg, rgba(36, 30, 24, 0.92), rgba(20, 17, 14, 0.94));
   border-color: rgba(233, 181, 89, 0.16);
-  -webkit-backdrop-filter: blur(16px) saturate(125%);
-  backdrop-filter: blur(16px) saturate(125%);
 }
 
 /* Quien pide menos movimiento ve la escena quieta */
@@ -392,4 +394,29 @@
   .login__main::after {
     animation: none;
   }
+}
+
+
+/* --- Indicador de espera: reloj de arena que gira dentro del botón ------------ */
+.reloj-espera {
+  display: inline-block;
+  width: 12px;
+  height: 17px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 2.5H17.5M2.5 25.5H17.5M4.5 2.5V6.5C4.5 10 8.5 12 8.5 14C8.5 16 4.5 18 4.5 21.5V25.5M15.5 2.5V6.5C15.5 10 11.5 12 11.5 14C11.5 16 15.5 18 15.5 21.5V25.5'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 2.5H17.5M2.5 25.5H17.5M4.5 2.5V6.5C4.5 10 8.5 12 8.5 14C8.5 16 4.5 18 4.5 21.5V25.5M15.5 2.5V6.5C15.5 10 11.5 12 11.5 14C11.5 16 15.5 18 15.5 21.5V25.5'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  animation: reloj-espera-gira 1.6s cubic-bezier(0.6, -0.2, 0.25, 1.15) infinite;
+}
+
+@keyframes reloj-espera-gira {
+  0%, 25% { rotate: 0deg; }
+  100% { rotate: 180deg; }
+}
+
+.login__espera {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
 }

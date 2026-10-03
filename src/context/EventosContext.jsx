@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { aHora, minutosAhora } from '../lib/fechas.js'
 import {
   listarEventos,
@@ -8,7 +8,7 @@ import {
   editarGestionApi,
   eliminarGestionApi,
 } from '../lib/api.js'
-import { useAuth } from './AuthContext.jsx'
+import { EventosContext, useAuth } from './contextos.js'
 
 // Modelo: un evento tiene un plan de trabajo (gestiones logísticas) y cada
 // gestión tiene día, hora, horas estimadas, estado y nota.
@@ -21,7 +21,6 @@ const nuevoId = () =>
     ? crypto.randomUUID()
     : `id-${Math.random().toString(36).slice(2)}`
 
-const EventosContext = createContext(null)
 
 export function EventosProvider({ children }) {
   const { autenticado } = useAuth()
@@ -30,26 +29,24 @@ export function EventosProvider({ children }) {
   const [estadoCarga, setEstadoCarga] = useState('cargando') // cargando | exito | error
   const [bitacora, setBitacora] = useState([])
 
-  const cargar = useCallback(() => {
-    setEstadoCarga('cargando')
-    listarEventos()
-      .then((data) => {
-        setEventos(data)
-        setEstadoCarga('exito')
-      })
-      .catch(() => setEstadoCarga('error'))
+  const pedirEventos = useCallback(() => {
+  listarEventos()
+    .then((data) => {
+      setEventos(data)
+      setEstadoCarga('exito')
+    })
+    .catch(() => setEstadoCarga('error'))
   }, [])
 
-    useEffect(() => {
-    if (autenticado) {
-      cargar()
-    } else {
-      // sin sesión no hay datos: evita que el siguiente usuario vea los del anterior
-      setEventos([])
-      setBitacora([])
-      setEstadoCarga('cargando')
-    }
-  }, [autenticado, cargar])
+  // para el botón "Reintentar"
+  const cargar = useCallback(() => {
+    setEstadoCarga('cargando')
+    pedirEventos()
+  }, [pedirEventos])
+
+  useEffect(() => {
+    if (autenticado) pedirEventos()
+  }, [autenticado, pedirEventos])
   
   const anotar = useCallback((accion, destacado, cola = '') => {
     setBitacora((prev) => [
@@ -254,10 +251,4 @@ export function EventosProvider({ children }) {
   )
 
   return <EventosContext.Provider value={valor}>{children}</EventosContext.Provider>
-}
-
-export function useEventos() {
-  const ctx = useContext(EventosContext)
-  if (!ctx) throw new Error('useEventos debe usarse dentro de <EventosProvider>')
-  return ctx
 }

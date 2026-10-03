@@ -1,8 +1,8 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { AvisosContext } from './contextos.js'
 
 // Confirmaciones breves ("Evento creado", "Gestión movida a mañana").
 // Van en una región aria-live para que un lector de pantalla las anuncie.
-const AvisosContext = createContext(null)
 
 export function AvisosProvider({ children }) {
   const [avisos, setAvisos] = useState([])
@@ -15,8 +15,10 @@ export function AvisosProvider({ children }) {
     }, 2800)
   }, [])
 
+  const valor = useMemo(() => ({ avisar }), [avisar])
+
   return (
-    <AvisosContext.Provider value={{ avisar }}>
+    <AvisosContext.Provider value={valor}>
       {children}
       <div className="avisos" role="status" aria-live="polite">
         {avisos.map((a) => (
@@ -25,10 +27,4 @@ export function AvisosProvider({ children }) {
       </div>
     </AvisosContext.Provider>
   )
-}
-
-export function useAvisos() {
-  const ctx = useContext(AvisosContext)
-  if (!ctx) throw new Error('useAvisos debe usarse dentro de <AvisosProvider>')
-  return ctx
 }

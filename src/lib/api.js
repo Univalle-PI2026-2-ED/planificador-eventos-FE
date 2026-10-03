@@ -24,17 +24,26 @@ async function manejarRespuesta(res) {
   return res.json()
 }
 
+// Render (plan gratis) puede tardar ~1 min en despertar: más que eso, se corta.
+const TIMEOUT_MS = 60000
+
 function peticion(ruta, { metodo = 'GET', cuerpo, publica = false } = {}) {
   const headers = {}
   if (cuerpo !== undefined) headers['Content-Type'] = 'application/json'
   const token = tokenActual()
   if (token && !publica) headers.Authorization = `Token ${token}`
 
+  const controlador = new AbortController()
+  const temporizador = setTimeout(() => controlador.abort(), TIMEOUT_MS)
+
   return fetch(`${BASE_URL}${ruta}`, {
     method: metodo,
     headers,
     body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
-  }).then(manejarRespuesta)
+    signal: controlador.signal,
+  })
+    .then(manejarRespuesta)
+    .finally(() => clearTimeout(temporizador))
 }
 
 export function loginApi({ correo, clave }) {

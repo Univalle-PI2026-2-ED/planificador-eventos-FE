@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useEventos } from '../context/EventosContext.jsx'
-import { useAvisos } from '../context/AvisosContext.jsx'
+import { useEventos, useAvisos } from '../context/contextos.js'
 import DialogoReprogramar from '../components/DialogoReprogramar.jsx'
 import ConfirmarEliminar from '../components/ConfirmarEliminar.jsx'
 import { fechaLarga, formatoHoras, mayuscula, nombreDia } from '../lib/fechas.js'
@@ -193,7 +192,7 @@ async function confirmarEliminarGestion() {
         )
       })}
 
-      <DialogoReprogramar gestion={reprogramando} onCerrar={() => setReprogramando(null)} />
+      <DialogoReprogramar key={reprogramando?.id ?? 'cerrado'} gestion={reprogramando} onCerrar={() => setReprogramando(null)} />
         <ConfirmarEliminar
         elemento={eliminandoEvento ? evento : null}
         titulo="¿Eliminar este evento?"

@@ -3,7 +3,7 @@
 
 @font-face {
   font-family: "Alte Haas Grotesk";
-  src: url("/fonts/AlteHaasGrotesk-Regular.ttf") format("truetype");
+  src: url("/fonts/AlteHaasGrotesk.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -11,7 +11,7 @@
 
 @font-face {
   font-family: "Alte Haas Grotesk";
-  src: url("/fonts/AlteHaasGrotesk-Bold.ttf") format("truetype");
+  src: url("/fonts/AlteHaasGrotesk_Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -219,6 +219,7 @@ textarea {
 .btn--texto {
   background: none;
   border: none;
+  cursor: pointer;
   padding: 4px 2px;
   color: var(--ink-2);
   font-weight: 500;

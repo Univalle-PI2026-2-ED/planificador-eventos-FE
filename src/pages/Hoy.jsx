@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useEventos } from '../context/EventosContext.jsx'
+import { useEventos } from '../context/contextos.js'
 import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
 import { clasificar, cuantoFalta, esAtrasada, ETIQUETA, PRIORIDAD, UMBRAL_URGENTE_MIN } from '../lib/prioridad.js'
 import { useReloj } from '../lib/useReloj.js'

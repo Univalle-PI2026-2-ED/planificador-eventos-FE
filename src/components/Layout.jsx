@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth, useEventos } from '../context/contextos.js'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { useEventos } from '../context/EventosContext.jsx'
 import { fechaLarga, hoyISO } from '../lib/fechas.js'
 import './layout.css'
 

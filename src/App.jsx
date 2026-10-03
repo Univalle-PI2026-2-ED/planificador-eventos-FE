@@ -7,7 +7,8 @@ import EditarEvento from './pages/EditarEvento.jsx'
 import Progreso from './pages/Progreso.jsx'
 import Login from './pages/Login.jsx'
 import Registro from './pages/Registro.jsx'
-import { AuthProvider, useAuth } from './context/AuthContext.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
+import { useAuth } from './context/contextos.js'
 import { EventosProvider } from './context/EventosContext.jsx'
 import { AvisosProvider } from './context/AvisosContext.jsx'
 
@@ -18,10 +19,16 @@ function RutaPrivada() {
   return <Layout />
 }
 
+// Cada vez que se inicia o se cierra sesión, los datos empiezan de cero.
+function DatosPorSesion({ children }) {
+  const { autenticado } = useAuth()
+  return <EventosProvider key={autenticado ? 'con-sesion' : 'sin-sesion'}>{children}</EventosProvider>
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <EventosProvider>
+      <DatosPorSesion>
         <AvisosProvider>
           <BrowserRouter>
             <Routes>
@@ -39,7 +46,7 @@ export default function App() {
             </Routes>
           </BrowserRouter>
         </AvisosProvider>
-      </EventosProvider>
+      </DatosPorSesion>
     </AuthProvider>
   )
 }
