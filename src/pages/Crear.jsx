@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useEventos } from '../context/EventosContext.jsx'
-import { useAvisos } from '../context/AvisosContext.jsx'
+import { useEventos, useAvisos } from '../context/contextos.js'
 import { formatoHoras, hoyISO, mayuscula, nombreDia, sumarDias } from '../lib/fechas.js'
 import './crear.css'
 

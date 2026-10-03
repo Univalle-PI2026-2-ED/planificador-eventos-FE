@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEventos } from '../context/EventosContext.jsx'
+import { useEventos } from '../context/contextos.js'
 import { fechaLarga, formatoHoras } from '../lib/fechas.js'
 import { clasificar } from '../lib/prioridad.js'
 import './progreso.css'

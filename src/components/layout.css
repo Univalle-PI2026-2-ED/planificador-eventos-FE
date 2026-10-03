@@ -759,19 +759,22 @@
 }
 
 /* ==========================================================================
-   LOGO — reloj de arena animado (solo en la app; el login conserva el suyo)
+   LOGO — reloj de arena animado (en la app y en el login)
    ::before = la arena (cae, se acumula abajo)
    ::after  = el marco de cristal con sus tapas
    Ciclo de 7 s: la arena cae (~5 s), pausa corta y el reloj da la vuelta.
    Como el dibujo es simétrico, al voltearlo queda idéntico al inicio y
    el bucle no se nota.
    ========================================================================== */
-.shell .brand {
+.shell .brand,
+.login .brand {
+  position: relative;
   gap: 11px;
 }
 
 /* --- Arena ---------------------------------------------------------------------- */
-.shell .brand::before {
+.shell .brand::before,
+.login .brand::before {
   content: "";
   flex: none;
   width: 20px;
@@ -795,7 +798,8 @@
 }
 
 /* --- Marco de cristal ----------------------------------------------------------------- */
-.shell .brand::after {
+.shell .brand::after,
+.login .brand::after {
   content: "";
   position: absolute;
   left: 0;

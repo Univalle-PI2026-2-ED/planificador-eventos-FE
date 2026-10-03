@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useEventos } from '../context/EventosContext.jsx'
-import { useAvisos } from '../context/AvisosContext.jsx'
+import { useEventos, useAvisos } from '../context/contextos.js'
 import { formatoHoras, hoyISO, mayuscula, nombreDia, sumarDias } from '../lib/fechas.js'
 
 // T3: reprogramar una gestión y resolver el conflicto por sobrecarga diaria.
@@ -10,15 +9,13 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
   const ref = useRef(null)
   const { limiteHoras, horasDelDia, gestionesDelDia, reprogramarGestion, posponerGestion } = useEventos()
   const { avisar } = useAvisos()
-  const [destino, setDestino] = useState(sumarDias(hoyISO(), 1))
+  const [destino, setDestino] = useState(() => sumarDias(gestion?.fecha ?? hoyISO(), 1))
   const [opcion, setOpcion] = useState('')
 
   useEffect(() => {
     const dlg = ref.current
     if (!dlg) return
     if (gestion) {
-      setDestino(sumarDias(gestion.fecha, 1))
-      setOpcion('')
       if (!dlg.open) dlg.showModal()
     } else if (dlg.open) {
       dlg.close()

@@ -1,8 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { loginApi, registroApi } from '../lib/api.js'
 import { borrarSesion, guardarSesion, leerSesion } from '../lib/sesion.js'
-
-const AuthContext = createContext(null)
+import { AuthContext } from './contextos.js'
 
 export function AuthProvider({ children }) {
   const [sesion, setSesion] = useState(() => leerSesion())
@@ -39,14 +38,8 @@ const registrar = useCallback(async (datos) => {
      registrar,
       cerrarSesion,   
     }),
-    [sesion, iniciarSesion, cerrarSesion],
+    [sesion, iniciarSesion, registrar, cerrarSesion],
   )
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth debe usarse dentro de <AuthProvider>')
-  return ctx
 }

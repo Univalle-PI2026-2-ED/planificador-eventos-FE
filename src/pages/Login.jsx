@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/contextos.js'
 import { fechaLarga, hoyISO } from '../lib/fechas.js'
 import './login.css'
 import InputClave from '../components/InputClave.jsx'
@@ -14,6 +14,7 @@ export default function Login() {
   const [errores, setErrores] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [tardando, setTardando] = useState(false)
 
   if (autenticado) return <Navigate to="/hoy" replace />
 
@@ -27,6 +28,8 @@ export default function Login() {
     if (Object.keys(nuevos).length > 0) return
 
     setEnviando(true)
+    // Si el servidor tarda (arranque en frío), se avisa en vez de dejar el botón mudo
+    const aviso = setTimeout(() => setTardando(true), 4000)
     try {
       await iniciarSesion({ correo, clave })
       // al guardarse la sesión, el <Navigate> de arriba lleva a /hoy
@@ -34,12 +37,16 @@ export default function Login() {
       const mensaje = err.detalle?.error?.details?.non_field_errors?.[0]
       if (mensaje) {
         setErrorGeneral(mensaje)
+      } else if (err.name === 'AbortError') {
+        setErrorGeneral('El servidor tardó demasiado en responder. Inténtalo de nuevo en un momento.')
       } else if (err.status === undefined) {
         setErrorGeneral('No pudimos conectar con el servidor. Revisa tu internet e inténtalo de nuevo.')
       } else {
         setErrorGeneral('No pudimos iniciar sesión. Inténtalo de nuevo en un momento.')
       }
     } finally {
+      clearTimeout(aviso)
+      setTardando(false)
       setEnviando(false)
     }
   }
@@ -98,9 +105,22 @@ export default function Login() {
               <p className="campo__error" role="alert">{errorGeneral}</p>
             )}
 
-            <button type="submit" className="btn btn--full" disabled={enviando}>
-              {enviando ? 'Entrando…' : 'Entrar'}
+            <button type="submit" className="btn btn--full" disabled={enviando} aria-busy={enviando}>
+              {enviando ? (
+                <>
+                  <span className="reloj-espera" aria-hidden="true" />
+                  Entrando…
+                </>
+              ) : (
+                'Entrar'
+              )}
             </button>
+
+            {tardando && (
+              <p className="login__espera" role="status">
+                El servidor está despertando; la primera vez puede tardar hasta un minuto.
+              </p>
+            )}
           </form>
 
           <p className="login__pie">
