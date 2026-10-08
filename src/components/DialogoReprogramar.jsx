@@ -9,13 +9,17 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
   const ref = useRef(null)
   const { limiteHoras, horasDelDia, gestionesDelDia, reprogramarGestion, posponerGestion } = useEventos()
   const { avisar } = useAvisos()
-  const [destino, setDestino] = useState(() => sumarDias(gestion?.fecha ?? hoyISO(), 1))
+  const [destino, setDestino] = useState(() => sumarDias(hoyISO(), 1))
   const [opcion, setOpcion] = useState('')
 
   useEffect(() => {
     const dlg = ref.current
     if (!dlg) return
+
     if (gestion) {
+      setDestino(sumarDias(hoyISO(), 1))
+      setOpcion('')
+
       if (!dlg.open) dlg.showModal()
     } else if (dlg.open) {
       dlg.close()
@@ -26,22 +30,23 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
 
   const dias = Array.from({ length: 5 }, (_, i) => sumarDias(hoyISO(), i + 1))
   const libres = (iso) => horasDelDia(iso, gestion.id)
+  const horasGestion = Number(gestion.horas) || 0
 
   const yaPlaneado = libres(destino)
-  const total = yaPlaneado + gestion.horas
+  const total = yaPlaneado + horasGestion
   const excede = total > limiteHoras
   const margen = Math.max(0, limiteHoras - yaPlaneado)
-  const diaLibre = dias.find((d) => libres(d) + gestion.horas <= limiteHoras)
+  const diaLibre = dias.find((d) => libres(d) + horasGestion <= limiteHoras)
   const candidata = gestionesDelDia(destino)
     .filter((g) => g.estado !== 'hecho' && g.id !== gestion.id)
-    .sort((a, b) => b.horas - a.horas)[0]
+    .sort((a, b) => Number(b.horas) - Number(a.horas))[0]
 
   const opciones = []
   if (diaLibre) {
     opciones.push({
       valor: 'mover',
       titulo: `Llevarla a ${nombreDia(diaLibre)}`,
-      detalle: `Ese día quedaría en ${formatoHoras(libres(diaLibre) + gestion.horas)}, dentro de tu límite.`,
+      detalle: `Ese día quedaría en ${formatoHoras(libres(diaLibre) + horasGestion)}, dentro de tu límite.`,
     })
   }
   if (margen >= 0.5) {
@@ -59,29 +64,46 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
     })
   }
 
-  function confirmar() {
-    if (!excede) {
-      reprogramarGestion(gestion.id, { fecha: destino })
-      avisar(`Gestión movida a ${nombreDia(destino)}`)
-    } else if (opcion === 'mover') {
-      reprogramarGestion(gestion.id, { fecha: diaLibre })
-      avisar(`Gestión movida a ${nombreDia(diaLibre)}`)
-    } else if (opcion === 'reducir') {
-      reprogramarGestion(gestion.id, { fecha: destino, horas: Math.max(0.5, margen) })
-      avisar(`Gestión movida a ${nombreDia(destino)} con ${formatoHoras(Math.max(0.5, margen))}`)
-    } else if (opcion === 'posponer') {
-      posponerGestion(candidata.id, sumarDias(destino, 1))
-      reprogramarGestion(gestion.id, { fecha: destino })
-      avisar(`“${candidata.nombre}” pospuesta y gestión movida a ${nombreDia(destino)}`)
+  async function confirmar() {
+    try {
+      if (!excede) {
+        await reprogramarGestion(gestion.id, { fecha: destino })
+        avisar(`Gestión movida a ${nombreDia(destino)}`)
+      } else if (opcion === 'mover') {
+        await reprogramarGestion(gestion.id, { fecha: diaLibre })
+        avisar(`Gestión movida a ${nombreDia(diaLibre)}`)
+      } else if (opcion === 'reducir') {
+        const nuevasHoras = Math.max(0.5, margen)
+
+        await reprogramarGestion(gestion.id, {
+          fecha: destino,
+          horas: nuevasHoras,
+        })
+
+        avisar(
+          `Gestión movida a ${nombreDia(destino)} con ${formatoHoras(nuevasHoras)}`
+        )
+      } else if (opcion === 'posponer') {
+        await posponerGestion(candidata.id, sumarDias(destino, 1))
+        await reprogramarGestion(gestion.id, { fecha: destino })
+
+        avisar(
+          `“${candidata.nombre}” pospuesta y gestión movida a ${nombreDia(destino)}`
+        )
+      }
+
+      onCerrar()
+    } catch (error) {
+      console.error('Error al reprogramar la gestión:', error)
+      avisar('No se pudo reprogramar la gestión. Inténtalo de nuevo.')
     }
-    onCerrar()
   }
 
   return (
     <dialog className="dialogo" ref={ref} onClose={onCerrar} aria-labelledby="dlg-titulo">
       <div className="dialogo__header">
         <h2 className="dialogo__titulo" id="dlg-titulo">Reprogramar gestión</h2>
-        <p className="dialogo__texto">{gestion.nombre} · {formatoHoras(gestion.horas)}</p>
+        <p className="dialogo__texto">{gestion.nombre} · {formatoHoras(horasGestion)}</p>
       </div>
 
       <div className="dialogo__cuerpo">
@@ -103,7 +125,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
           </div>
           <div className="balance__fila">
             <span>Esta gestión</span>
-            <span className="balance__valor">+{formatoHoras(gestion.horas)}</span>
+            <span className="balance__valor">+{formatoHoras(horasGestion)}</span>
           </div>
           <div className="balance__fila">
             <span>Total del día</span>
