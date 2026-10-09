@@ -34,7 +34,8 @@ export default function Progreso() {
         const pct = ev.gestiones.length ? Math.round((hechas / ev.gestiones.length) * 100) : 0
         const faltan = ev.gestiones
           .filter((g) => g.estado !== 'hecho')
-          .reduce((s, g) => s + g.horas, 0)
+          .reduce((s, g) => s + (Number(g.horas) || 0), 0)
+
 
         return (
           <section className="avance" key={ev.id}>
