@@ -6,7 +6,10 @@ import {
   eliminarEventoApi,
   editarEventoApi,
   editarGestionApi,
+  reprogramarGestionApi,
   eliminarGestionApi,
+  obtenerPreferenciasApi,
+  guardarPreferenciasApi,
 } from '../lib/api.js'
 import { EventosContext, useAuth } from './contextos.js'
 
@@ -29,13 +32,33 @@ export function EventosProvider({ children }) {
   const [estadoCarga, setEstadoCarga] = useState('cargando') // cargando | exito | error
   const [bitacora, setBitacora] = useState([])
 
-  const pedirEventos = useCallback(() => {
-  listarEventos()
-    .then((data) => {
-      setEventos(data)
-      setEstadoCarga('exito')
+  const guardarLimiteHoras = useCallback(async (nuevoLimite) => {
+    const data = await guardarPreferenciasApi({
+      limite_horas: Number(nuevoLimite),
     })
-    .catch(() => setEstadoCarga('error'))
+
+    const limiteGuardado = Number(data.limite_horas)
+    setLimiteHoras(limiteGuardado)
+
+    return limiteGuardado
+  }, [])
+
+  const pedirEventos = useCallback(() => {
+    listarEventos()
+      .then((data) => {
+        setEventos(data)
+        setEstadoCarga('exito')
+      })
+      .catch(() => setEstadoCarga('error'))
+  }, [])
+
+  const pedirPreferencias = useCallback(async () => {
+    try {
+      const data = await obtenerPreferenciasApi()
+      setLimiteHoras(Number(data.limite_horas))
+    } catch (error) {
+      console.error('Error al cargar las preferencias:', error)
+    }
   }, [])
 
   // para el botón "Reintentar"
@@ -45,9 +68,12 @@ export function EventosProvider({ children }) {
   }, [pedirEventos])
 
   useEffect(() => {
-    if (autenticado) pedirEventos()
-  }, [autenticado, pedirEventos])
-  
+    if (autenticado) {
+      pedirEventos()
+      pedirPreferencias()
+    }
+  }, [autenticado, pedirEventos, pedirPreferencias])
+
   const anotar = useCallback((accion, destacado, cola = '') => {
     setBitacora((prev) => [
       { id: nuevoId(), hora: aHora(minutosAhora()), accion, destacado, cola },
@@ -88,8 +114,8 @@ export function EventosProvider({ children }) {
   )
 
   const obtenerEvento = useCallback(
-  (id) => eventos.find((ev) => String(ev.id) === String(id)),
-  [eventos],)
+    (id) => eventos.find((ev) => String(ev.id) === String(id)),
+    [eventos],)
   const obtenerGestion = useCallback((id) => gestiones.find((g) => g.id === id), [gestiones])
 
   /* ---- acciones ------------------------------------------------------ */
@@ -133,7 +159,7 @@ export function EventosProvider({ children }) {
     },
     [anotar, eventos],
   )
-  
+
   const editarEvento = useCallback(
     async (eventoId, cambios) => {
       const payload = {}
@@ -199,12 +225,16 @@ export function EventosProvider({ children }) {
     [cambiarGestion],
   )
 
+  
   const reprogramarGestion = useCallback(
     async (gestionId, { fecha, horas }) => {
       const cambios = { fecha, estado: 'pendiente' }
       if (horas != null) cambios.horas = Number(horas)
-      await editarGestionApi(gestionId, cambios)
-      cambiarGestion(gestionId, cambios)
+
+      const gestionActualizada = await reprogramarGestionApi(gestionId, cambios)
+
+      cambiarGestion(gestionId, gestionActualizada)
+      return gestionActualizada
     },
     [cambiarGestion],
   )
@@ -241,12 +271,14 @@ export function EventosProvider({ children }) {
       guardarNota,
       reprogramarGestion,
       posponerGestion,
+      guardarLimiteHoras,
     }),
     [
-      eventos, gestiones, limiteHoras, estadoCarga, cargar, bitacora, anotar,
+      eventos, gestiones, limiteHoras, guardarLimiteHoras,
+      estadoCarga, cargar, bitacora, anotar,
       gestionesDelDia, horasDelDia, obtenerEvento, obtenerGestion, nombreDuplicado,
-      agregarEvento,editarEvento, editarGestion, eliminarEvento, eliminarGestion, marcarGestion, guardarNota,
-      reprogramarGestion, posponerGestion,
+      agregarEvento, editarEvento, editarGestion, eliminarEvento, eliminarGestion,
+      marcarGestion, guardarNota, reprogramarGestion, posponerGestion,
     ],
   )
 

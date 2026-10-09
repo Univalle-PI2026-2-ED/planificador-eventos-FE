@@ -78,10 +78,30 @@ export function editarGestionApi(id, cambios) {
   return peticion(`/gestiones/${id}/`, { metodo: 'PATCH', cuerpo: cambios })
 }
 
+export function reprogramarGestionApi(id, cambios) {
+  return peticion(`/gestiones/${id}/reprogramar/`, {
+    metodo: 'POST',
+    cuerpo: cambios,
+  })
+}
+
+
 export function eliminarGestionApi(id) {
   return peticion(`/gestiones/${id}/`, { metodo: 'DELETE' })
 }
 
 export function editarEventoApi(id, cambios) {
   return peticion(`/eventos/${id}/`, { metodo: 'PATCH', cuerpo: cambios })
+}
+
+
+export function obtenerPreferenciasApi() {
+  return peticion('/preferencias/')
+}
+
+export function guardarPreferenciasApi(cambios) {
+  return peticion('/preferencias/', {
+    metodo: 'PATCH',
+    cuerpo: cambios,
+  })
 }
