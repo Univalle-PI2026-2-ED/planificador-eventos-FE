@@ -1,0 +1,228 @@
+.configuracion {
+  position: relative;
+  isolation: isolate;
+  max-width: 850px;
+  margin: 0 auto;
+  color: var(--ink);
+}
+
+.configuracion__encabezado {
+  margin-bottom: 28px;
+}
+
+.configuracion__etiqueta {
+  margin: 0 0 8px;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.configuracion__titulo {
+  margin: 0 0 10px;
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 700;
+}
+
+.configuracion__intro {
+  max-width: 55ch;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.configuracion__panel {
+  position: relative;
+  overflow: hidden;
+  padding: 28px;
+  border: 1px solid rgba(233, 181, 89, 0.16);
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    var(--paper-2),
+    var(--paper)
+  );
+  box-shadow: var(--sombra);
+}
+
+.configuracion__panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28px;
+  right: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--degradado-acento);
+}
+
+.configuracion__panel-cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.configuracion__icono {
+  display: grid;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(233, 181, 89, 0.22);
+  border-radius: 14px;
+  background: rgba(217, 154, 43, 0.09);
+  color: var(--ink);
+  font-size: 27px;
+}
+
+.configuracion__panel-cabecera h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.configuracion__panel-cabecera p {
+  max-width: 55ch;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.configuracion__form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.configuracion__campo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.configuracion__campo > label {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.configuracion__entrada {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.configuracion__entrada input {
+  box-sizing: border-box;
+  width: 120px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 650;
+  color-scheme: dark;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.configuracion__entrada input:focus {
+  border-color: rgba(233, 181, 89, 0.75);
+  box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.12);
+}
+
+.configuracion__entrada input[aria-invalid="true"] {
+  border-color: #e18a78;
+}
+
+.configuracion__entrada > span {
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.configuracion__ayuda,
+.configuracion__error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.configuracion__ayuda {
+  color: var(--ink-2);
+}
+
+.configuracion__error {
+  color: #f0a092;
+}
+
+.configuracion__nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid rgba(233, 181, 89, 0.13);
+  border-radius: 12px;
+  background: rgba(217, 154, 43, 0.055);
+  color: var(--ink-2);
+}
+
+.configuracion__nota > span {
+  flex-shrink: 0;
+  color: #e9b559;
+}
+
+.configuracion__nota p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.configuracion__form > .btn {
+  min-height: 44px;
+}
+
+.configuracion__form > .btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 520px) {
+  .configuracion__panel {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .configuracion__panel::before {
+    left: 18px;
+    right: 18px;
+  }
+
+  .configuracion__panel-cabecera {
+    gap: 12px;
+  }
+
+  .configuracion__icono {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .configuracion__panel-cabecera h2 {
+    font-size: 18px;
+  }
+
+  .configuracion__entrada {
+    flex-wrap: wrap;
+  }
+}

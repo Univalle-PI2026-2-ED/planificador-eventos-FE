@@ -1,16 +1,35 @@
+
 import { useEffect, useRef, useState } from 'react'
 import { useEventos, useAvisos } from '../context/contextos.js'
-import { formatoHoras, hoyISO, mayuscula, nombreDia, sumarDias } from '../lib/fechas.js'
+import {
+  formatoHoras,
+  hoyISO,
+  mayuscula,
+  nombreDia,
+  sumarDias,
+} from '../lib/fechas.js'
 
-// T3: reprogramar una gestión y resolver el conflicto por sobrecarga diaria.
-// El conflicto ocurre cuando las horas acumuladas del día destino superan el
-// límite que definió la persona usuaria.
 export default function DialogoReprogramar({ gestion, onCerrar }) {
   const ref = useRef(null)
-  const { limiteHoras, horasDelDia, gestionesDelDia, reprogramarGestion, posponerGestion } = useEventos()
+
+  const {
+    horasDelDia,
+    gestionesDelDia,
+    reprogramarGestion,
+    posponerGestion,
+    limiteHoras,
+  } = useEventos()
+
   const { avisar } = useAvisos()
+
+
   const [destino, setDestino] = useState(() => sumarDias(hoyISO(), 1))
+  const [estimacion, setEstimacion] = useState(1)
   const [opcion, setOpcion] = useState('')
+  const [guardando, setGuardando] = useState(false)
+
+
+  const limite = Number(limiteHoras) || 6
 
   useEffect(() => {
     const dlg = ref.current
@@ -18,6 +37,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
 
     if (gestion) {
       setDestino(sumarDias(hoyISO(), 1))
+      setEstimacion(Math.max(0.5, Number(gestion.horas) || 0.5))
       setOpcion('')
 
       if (!dlg.open) dlg.showModal()
@@ -26,52 +46,99 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
     }
   }, [gestion])
 
-  if (!gestion) return <dialog className="dialogo" ref={ref} onClose={onCerrar} />
+  if (!gestion) {
+    return <dialog className="dialogo" ref={ref} onClose={onCerrar} />
+  }
 
-  const dias = Array.from({ length: 5 }, (_, i) => sumarDias(hoyISO(), i + 1))
+  const dias = Array.from(
+    { length: 5 },
+    (_, i) => sumarDias(hoyISO(), i + 1)
+  )
+
   const libres = (iso) => horasDelDia(iso, gestion.id)
   const horasGestion = Number(gestion.horas) || 0
+  const horasPropuestas = Number(estimacion)
+
+  const estimacionValida =
+    Number.isFinite(horasPropuestas) &&
+    horasPropuestas >= 0.5 &&
+    Math.round(horasPropuestas * 2) === horasPropuestas * 2
 
   const yaPlaneado = libres(destino)
-  const total = yaPlaneado + horasGestion
-  const excede = total > limiteHoras
-  const margen = Math.max(0, limiteHoras - yaPlaneado)
-  const diaLibre = dias.find((d) => libres(d) + horasGestion <= limiteHoras)
+  const total = yaPlaneado + (estimacionValida ? horasPropuestas : 0)
+  const excede = total > limite
+  const margen = Math.max(0, limite - yaPlaneado)
+
+  const diaLibre = dias.find(
+    (d) => libres(d) + horasPropuestas <= limite
+  )
+
   const candidata = gestionesDelDia(destino)
     .filter((g) => g.estado !== 'hecho' && g.id !== gestion.id)
     .sort((a, b) => Number(b.horas) - Number(a.horas))[0]
 
   const opciones = []
-  if (diaLibre) {
+
+  if (diaLibre && excede) {
     opciones.push({
       valor: 'mover',
       titulo: `Llevarla a ${nombreDia(diaLibre)}`,
-      detalle: `Ese día quedaría en ${formatoHoras(libres(diaLibre) + horasGestion)}, dentro de tu límite.`,
+      detalle: `Ese día quedaría en ${formatoHoras(
+        libres(diaLibre) + horasPropuestas
+      )}, dentro de tu límite.`,
     })
   }
-  if (margen >= 0.5) {
+
+  if (excede && margen >= 0.5) {
     opciones.push({
       valor: 'reducir',
       titulo: `Reducir la estimación a ${formatoHoras(margen)}`,
-      detalle: `Tu día ${nombreDia(destino)} queda justo en el límite de ${formatoHoras(limiteHoras)}.`,
+      detalle: `El día quedaría en el límite de ${formatoHoras(limite)}.`,
     })
   }
-  if (candidata) {
+
+  if (excede && candidata) {
     opciones.push({
       valor: 'posponer',
-      titulo: `Posponer “${candidata.nombre}”`,
-      detalle: `Libera ${formatoHoras(candidata.horas)} de ${nombreDia(destino)} y esa gestión queda marcada como pospuesta.`,
+      titulo: `Posponer "${candidata.nombre}"`,
+      detalle: `Libera ${formatoHoras(candidata.horas)} de ${nombreDia(
+        destino
+      )} y esa gestión queda marcada como pospuesta.`,
     })
   }
 
   async function confirmar() {
+
+    if (guardando) return
+    setGuardando(true)
+
+    if (!estimacionValida) {
+      avisar('La estimación debe ser de al menos 0,5 horas y avanzar en intervalos de 0,5.')
+      return
+    }
+
     try {
       if (!excede) {
-        await reprogramarGestion(gestion.id, { fecha: destino })
-        avisar(`Gestión movida a ${nombreDia(destino)}`)
+        await reprogramarGestion(gestion.id, {
+          fecha: destino,
+          horas: horasPropuestas,
+        })
+
+        const mensaje =
+          horasPropuestas !== horasGestion
+            ? `Gestión actualizada para ${nombreDia(destino)}, con ${formatoHoras(horasPropuestas)}`
+            : `Gestión reprogramada para ${nombreDia(destino)}`
+
+        avisar(mensaje)
       } else if (opcion === 'mover') {
-        await reprogramarGestion(gestion.id, { fecha: diaLibre })
-        avisar(`Gestión movida a ${nombreDia(diaLibre)}`)
+        await reprogramarGestion(gestion.id, {
+          fecha: diaLibre,
+          horas: horasPropuestas,
+        })
+
+        avisar(
+          `Gestión movida a ${nombreDia(diaLibre)} con ${formatoHoras(horasPropuestas)}`
+        )
       } else if (opcion === 'reducir') {
         const nuevasHoras = Math.max(0.5, margen)
 
@@ -85,11 +152,17 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
         )
       } else if (opcion === 'posponer') {
         await posponerGestion(candidata.id, sumarDias(destino, 1))
-        await reprogramarGestion(gestion.id, { fecha: destino })
+
+        await reprogramarGestion(gestion.id, {
+          fecha: destino,
+          horas: horasPropuestas,
+        })
 
         avisar(
-          `“${candidata.nombre}” pospuesta y gestión movida a ${nombreDia(destino)}`
+          `"${candidata.nombre}" pospuesta y gestión movida a ${nombreDia(destino)}`
         )
+      } else {
+        return
       }
 
       onCerrar()
@@ -109,7 +182,11 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
           Number.isFinite(excesoConflicto)
         ) {
           avisar(
-            `Sobrecarga el ${nombreDia(fechaConflicto)}: ${formatoHoras(horasConflicto)} planeadas, límite ${formatoHoras(limiteConflicto)}, exceso ${formatoHoras(excesoConflicto)}.`
+            `Sobrecarga el ${nombreDia(fechaConflicto)}: ${formatoHoras(
+              horasConflicto
+            )} planeadas, límite ${formatoHoras(
+              limiteConflicto
+            )}, exceso ${formatoHoras(excesoConflicto)}.`
           )
         } else {
           avisar(
@@ -122,20 +199,39 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
       }
 
       avisar('No se pudo reprogramar la gestión. Inténtalo de nuevo.')
+    } finally {
+      setGuardando(false)
     }
   }
 
   return (
-    <dialog className="dialogo" ref={ref} onClose={onCerrar} aria-labelledby="dlg-titulo">
+    <dialog
+      className="dialogo"
+      ref={ref}
+      onClose={onCerrar}
+      aria-labelledby="dlg-titulo"
+    >
       <div className="dialogo__header">
-        <h2 className="dialogo__titulo" id="dlg-titulo">Reprogramar gestión</h2>
-        <p className="dialogo__texto">{gestion.nombre} · {formatoHoras(horasGestion)}</p>
+        <h2 className="dialogo__titulo" id="dlg-titulo">
+          Reprogramar gestión
+        </h2>
+        <p className="dialogo__texto">{gestion.nombre}</p>
       </div>
 
       <div className="dialogo__cuerpo">
         <div className="campo">
-          <label className="campo__label" htmlFor="destino">Nuevo día</label>
-          <select id="destino" value={destino} onChange={(e) => { setDestino(e.target.value); setOpcion('') }}>
+          <label className="campo__label" htmlFor="destino">
+            Nueva fecha
+          </label>
+
+          <select
+            id="destino"
+            value={destino}
+            onChange={(e) => {
+              setDestino(e.target.value)
+              setOpcion('')
+            }}
+          >
             {dias.map((d) => (
               <option key={d} value={d}>
                 {nombreDia(d)} — {formatoHoras(libres(d))} ya planeadas
@@ -144,59 +240,135 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
           </select>
         </div>
 
+        <div className="campo">
+          <label className="campo__label" htmlFor="estimacion">
+            Estimación de tiempo (horas)
+          </label>
+
+          <input
+            id="estimacion"
+            type="number"
+            min="0.5"
+            step="0.5"
+            value={estimacion}
+            onChange={(e) => {
+              setEstimacion(e.target.value === '' ? '' : Number(e.target.value))
+              setOpcion('')
+            }}
+            aria-describedby="estimacion-ayuda"
+          />
+
+          <p className="dialogo__texto" id="estimacion-ayuda">
+            Puedes usar intervalos de media hora. Ejemplo: 0,5; 1; 1,5; 2.
+          </p>
+        </div>
+
         <div className="balance">
           <div className="balance__fila">
             <span>Ya planeado {nombreDia(destino)}</span>
-            <span className="balance__valor">{formatoHoras(yaPlaneado)}</span>
+            <span className="balance__valor">
+              {formatoHoras(yaPlaneado)}
+            </span>
           </div>
+
           <div className="balance__fila">
             <span>Esta gestión</span>
-            <span className="balance__valor">+{formatoHoras(horasGestion)}</span>
+            <span className="balance__valor">
+              +{estimacionValida ? formatoHoras(horasPropuestas) : '—'}
+            </span>
           </div>
+
           <div className="balance__fila">
             <span>Total del día</span>
-            <span className={'balance__valor ' + (excede ? 'balance__valor--malo' : 'balance__valor--bueno')}>
-              {formatoHoras(total)} de {formatoHoras(limiteHoras)}
+            <span
+              className={
+                'balance__valor ' +
+                (excede
+                  ? 'balance__valor--malo'
+                  : 'balance__valor--bueno')
+              }
+            >
+              {estimacionValida ? formatoHoras(total) : '—'} de{' '}
+              {formatoHoras(limite)}
             </span>
           </div>
         </div>
 
-        {excede && (
+        {excede && estimacionValida && (
           <>
             <div className="aviso aviso--error">
-              <span className="aviso__titulo">Ese día quedaría sobrecargado</span>
+              <span className="aviso__titulo">
+                Ese día quedaría sobrecargado
+              </span>
+
               <p className="aviso__texto">
-                {mayuscula(nombreDia(destino))} acumularía {formatoHoras(total)} de gestión y tu
-                límite es {formatoHoras(limiteHoras)} al día. Elige cómo resolverlo:
+                {mayuscula(nombreDia(destino))} acumularía{' '}
+                {formatoHoras(total)} de gestión y tu límite es{' '}
+                {formatoHoras(limite)} al día. Elige cómo resolverlo:
               </p>
             </div>
 
-            <ul className="opciones" role="radiogroup" aria-label="Cómo resolver la sobrecarga">
-              {opciones.map((o) => (
-                <li key={o.valor}>
-                  <label className="opcion">
-                    <input
-                      type="radio"
-                      name="resolucion"
-                      value={o.valor}
-                      checked={opcion === o.valor}
-                      onChange={() => setOpcion(o.valor)}
-                    />
-                    <span className="opcion__titulo">{o.titulo}</span>
-                    <span className="opcion__detalle">{o.detalle}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+            {opciones.length > 0 ? (
+              <ul
+                className="opciones"
+                role="radiogroup"
+                aria-label="Cómo resolver la sobrecarga"
+              >
+                {opciones.map((o) => (
+                  <li key={o.valor}>
+                    <label className="opcion">
+                      <input
+                        type="radio"
+                        name="resolucion"
+                        value={o.valor}
+                        checked={opcion === o.valor}
+                        onChange={() => setOpcion(o.valor)}
+                      />
+
+                      <span className="opcion__titulo">{o.titulo}</span>
+                      <span className="opcion__detalle">{o.detalle}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="aviso__texto">
+                No hay una opción automática disponible. Reduce la estimación
+                o elige otra fecha.
+              </p>
+            )}
           </>
         )}
       </div>
 
       <div className="dialogo__pie">
-        <button type="button" className="btn btn--fantasma" onClick={onCerrar}>Cancelar</button>
-        <button type="button" className="btn" onClick={confirmar} disabled={excede && !opcion}>
-          {excede ? 'Aplicar y reprogramar' : 'Reprogramar'}
+        <button
+          type="button"
+          className="btn btn--fantasma"
+          onClick={onCerrar}
+        >
+          Cancelar
         </button>
+
+
+        <button
+          type="button"
+          className="btn"
+          onClick={confirmar}
+          disabled={
+            guardando ||
+            !estimacionValida ||
+            (excede && (!opcion || !opciones.some((o) => o.valor === opcion))
+            )
+          }
+        >
+          {guardando
+            ? 'Guardando...'
+            : excede
+              ? 'Aplicar y reprogramar'
+              : 'Guardar cambios'}
+        </button>
+
       </div>
     </dialog>
   )

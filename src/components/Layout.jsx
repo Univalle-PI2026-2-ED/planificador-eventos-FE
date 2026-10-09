@@ -8,6 +8,7 @@ const TABS = [
   { to: '/hoy', label: 'Hoy' },
   { to: '/crear', label: 'Crear' },
   { to: '/progreso', label: 'Progreso' },
+  { to: '/configuracion', label: 'Configuración' },
 ]
 
 export default function Layout() {
