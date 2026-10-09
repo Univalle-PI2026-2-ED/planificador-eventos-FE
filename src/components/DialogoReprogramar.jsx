@@ -95,6 +95,32 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
       onCerrar()
     } catch (error) {
       console.error('Error al reprogramar la gestión:', error)
+
+      if (error.status === 409) {
+        const conflicto = error.detalle?.error?.details
+        const fechaConflicto = conflicto?.fecha || destino
+        const horasConflicto = Number(conflicto?.horas)
+        const limiteConflicto = Number(conflicto?.limite)
+        const excesoConflicto = Number(conflicto?.exceso)
+
+        if (
+          Number.isFinite(horasConflicto) &&
+          Number.isFinite(limiteConflicto) &&
+          Number.isFinite(excesoConflicto)
+        ) {
+          avisar(
+            `Sobrecarga el ${nombreDia(fechaConflicto)}: ${formatoHoras(horasConflicto)} planeadas, límite ${formatoHoras(limiteConflicto)}, exceso ${formatoHoras(excesoConflicto)}.`
+          )
+        } else {
+          avisar(
+            error.detalle?.error?.message ||
+            'Ese día superaría tu límite de horas diario.'
+          )
+        }
+
+        return
+      }
+
       avisar('No se pudo reprogramar la gestión. Inténtalo de nuevo.')
     }
   }

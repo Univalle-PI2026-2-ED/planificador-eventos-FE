@@ -25,8 +25,13 @@ export default function EditarEvento() {
   const { id } = useParams()
   const navigate = useNavigate()
   const {
-    obtenerEvento, editarEvento, editarGestion, eliminarGestion,
-    nombreDuplicado, limiteHoras, setLimiteHoras,
+    obtenerEvento,
+    editarEvento,
+    editarGestion,
+    eliminarGestion,
+    nombreDuplicado,
+    limiteHoras,
+    guardarLimiteHoras,
   } = useEventos()
   const { avisar } = useAvisos()
   const refNombre = useRef(null)
@@ -76,8 +81,6 @@ export default function EditarEvento() {
 
   function cambiarLimite(valor) {
     setLimite(valor)
-    const n = Number(valor)
-    if (n > 0) setLimiteHoras(n)
   }
 
   function validarNombreEnTiempoReal(texto) {
@@ -90,6 +93,23 @@ export default function EditarEvento() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+
+    const valorLimite = Number(limite)
+
+    if (
+      limite === '' ||
+      !Number.isFinite(valorLimite) ||
+      valorLimite < 1 ||
+      valorLimite > 12 ||
+      valorLimite * 2 !== Math.round(valorLimite * 2)
+    ) {
+      setErrores((prev) => ({
+        ...prev,
+        limite: 'El límite debe estar entre 1 y 12 horas, en pasos de 0.5.',
+      }))
+      return
+    }
+
     const nuevos = {}
     if (!nombre.trim()) nuevos.nombre = 'Escribe un nombre para reconocer el evento.'
     else if (nombreDuplicado(nombre, evento.id)) {
@@ -116,14 +136,27 @@ export default function EditarEvento() {
       const idsActuales = new Set(plan.map((g) => g.id))
       const eliminadas = evento.gestiones.filter((g) => !idsActuales.has(g.id))
 
+      const limiteCambio = valorLimite !== Number(limiteHoras)
+
       await Promise.all([
-        Object.keys(cambiosEvento).length > 0 ? editarEvento(evento.id, cambiosEvento) : null,
+        Object.keys(cambiosEvento).length > 0
+          ? editarEvento(evento.id, cambiosEvento)
+          : null,
+
         ...plan.map((g) => {
           const original = evento.gestiones.find((og) => og.id === g.id)
           const cambios = diferencia(original, g)
-          return Object.keys(cambios).length > 0 ? editarGestion(g.id, cambios) : null
+
+          return Object.keys(cambios).length > 0
+            ? editarGestion(g.id, cambios)
+            : null
         }),
+
         ...eliminadas.map((g) => eliminarGestion(g.id)),
+
+        limiteCambio
+          ? guardarLimiteHoras(valorLimite)
+          : null,
       ])
 
       avisar('Cambios guardados')
@@ -192,15 +225,15 @@ export default function EditarEvento() {
                   if (['-', '+', 'e', 'E'].includes(e.key)) e.preventDefault()
                 }}
                 onChange={(e) => {
-                  const val = e.target.value
-                  cambiarLimite(val > 0 ? val : '')
+                  cambiarLimite(e.target.value)
+                  setErrores((prev) => ({ ...prev, limite: '' }))
                 }}
               />
             </div>
           </div>
-          {(limite === '' || Number(limite) <= 0) ? (
+          {errores.limite ? (
             <p className="campo__error" id="err-limite">
-              * Ingresa un límite de horas diario válido (por ejemplo: 8 o 8.5 horas).
+              {errores.limite}
             </p>
           ) : (
             <p className="campo__ayuda">
