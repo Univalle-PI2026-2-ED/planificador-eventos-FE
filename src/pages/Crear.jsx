@@ -9,14 +9,13 @@ const gestionVacia = (k) => ({ k, nombre: '', fecha: hoyISO(), hora: '09:00', ho
 // T1: crear el evento y su plan de trabajo logístico con plazos y horas.
 export default function Crear() {
   const navigate = useNavigate()
-  const { agregarEvento, nombreDuplicado, limiteHoras, setLimiteHoras } = useEventos()
+  const { agregarEvento, nombreDuplicado, limiteHoras } = useEventos()
   const { avisar } = useAvisos()
   const refNombre = useRef(null)
   const refsNombreGestion = useRef({})
   const refAgregar = useRef(null)
   const [nombre, setNombre] = useState('')
   const [fecha, setFecha] = useState(sumarDias(hoyISO(), 7))
-  const [limite, setLimite] = useState(limiteHoras)
   const [plan, setPlan] = useState([])
   const [siguienteK, setSiguienteK] = useState(1)
   const [errores, setErrores] = useState({})
@@ -43,13 +42,7 @@ export default function Crear() {
     acc[g.fecha] = (acc[g.fecha] || 0) + (Number(g.horas) || 0)
     return acc
   }, {})
-  const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limite))
-
-  function cambiarLimite(valor) {
-    setLimite(valor)
-    const n = Number(valor)
-    if (n > 0) setLimiteHoras(n)
-  }
+  const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limiteHoras))
 
   function validarNombreEnTiempoReal(texto) {
     if (!texto.trim()) {
@@ -130,42 +123,7 @@ export default function Crear() {
               <label className="campo__label" htmlFor="f-fecha">Fecha del evento</label>
               <input id="f-fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
             </div>
-            <div className="campo">
-              <label className="campo__label" htmlFor="f-limite">Límite de horas al día</label>
-              <input
-                id="f-limite"
-                type="number"
-                min="1"
-                max="12"
-                step="0.5"
-                value={limite}
-                aria-invalid={(limite === '' || Number(limite) <= 0) ? 'true' : undefined}
-                aria-describedby={(limite === '' || Number(limite) <= 0) ? 'err-limite' : undefined}
-                onKeyDown={(e) => {
-                  if (['-', '+', 'e', 'E'].includes(e.key)) {
-                    e.preventDefault()
-                  }
-                }}
-                onChange={(e) => {
-                  const val = e.target.value
-                  if (val > 0) {
-                    cambiarLimite(val)
-                  } else {
-                    cambiarLimite('') // Deja el campo vacío si borra o pone <= 0
-                  }
-                }}
-              />
-            </div>
           </div>
-          {(limite === '' || Number(limite) <= 0) ? (
-            <p className="campo__error" id="err-limite">
-              * Ingresa un límite de horas diario válido (por ejemplo: 8 o 8.5 horas).
-            </p>
-          ) : (
-            <p className="campo__ayuda">
-              Usamos el límite para avisarte cuando un día acumule más gestiones de las que puedes atender.
-            </p>
-          )}
         </section>
 
         <section className="bloque">

@@ -11,6 +11,7 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { useAuth } from './context/contextos.js'
 import { EventosProvider } from './context/EventosContext.jsx'
 import { AvisosProvider } from './context/AvisosContext.jsx'
+import Configuracion from './pages/Configuracion.jsx'
 
 // Si no hay sesión, cualquier ruta privada manda al login.
 function RutaPrivada() {
@@ -41,6 +42,7 @@ export default function App() {
                 <Route path="/evento/:id" element={<Evento />} />
                 <Route path="/evento/:id/editar" element={<EditarEvento />} />
                 <Route path="/progreso" element={<Progreso />} />
+                <Route path="/configuracion" element={<Configuracion />} />
                 <Route path="*" element={<Navigate to="/hoy" replace />} />
               </Route>
             </Routes>

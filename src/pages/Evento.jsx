@@ -51,27 +51,27 @@ export default function Evento() {
   }
 
   async function confirmarEliminarEvento() {
-  try {
-    await eliminarEvento(evento.id)
-    avisar(`Se eliminó "${evento.nombre}"`)
-    setEliminandoEvento(false)
-    navigate('/hoy')
-  } catch {
-    avisar('No se pudo eliminar el evento. Intenta de nuevo.')
+    try {
+      await eliminarEvento(evento.id)
+      avisar(`Se eliminó "${evento.nombre}"`)
+      setEliminandoEvento(false)
+      navigate('/hoy')
+    } catch {
+      avisar('No se pudo eliminar el evento. Intenta de nuevo.')
+    }
   }
-}
 
 
-async function confirmarEliminarGestion() {
-  try {
-    await eliminarGestion(eliminandoGestion.id)
-    avisar(`Se eliminó "${eliminandoGestion.nombre}"`)
-    setEliminandoGestion(null)
-    requestAnimationFrame(() => refTitulo.current?.focus())
-  } catch {
-    avisar('No se pudo eliminar la gestión. Intenta de nuevo.')
+  async function confirmarEliminarGestion() {
+    try {
+      await eliminarGestion(eliminandoGestion.id)
+      avisar(`Se eliminó "${eliminandoGestion.nombre}"`)
+      setEliminandoGestion(null)
+      requestAnimationFrame(() => refTitulo.current?.focus())
+    } catch {
+      avisar('No se pudo eliminar la gestión. Intenta de nuevo.')
+    }
   }
-}
 
   return (
     <div className="evento-detalle vista">
@@ -192,8 +192,12 @@ async function confirmarEliminarGestion() {
         )
       })}
 
-      <DialogoReprogramar key={reprogramando?.id ?? 'cerrado'} gestion={reprogramando} onCerrar={() => setReprogramando(null)} />
-        <ConfirmarEliminar
+      <DialogoReprogramar
+        key={reprogramando?.id ?? 'cerrado'}
+        gestion={reprogramando}
+        onCerrar={() => setReprogramando(null)}
+      />
+      <ConfirmarEliminar
         elemento={eliminandoEvento ? evento : null}
         titulo="¿Eliminar este evento?"
         texto={`Se eliminará “${evento.nombre}” junto con sus ${evento.gestiones.length} gestiones. Esta acción no se puede deshacer.`}

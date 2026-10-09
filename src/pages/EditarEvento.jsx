@@ -36,7 +36,6 @@ export default function EditarEvento() {
     eliminarGestion,
     nombreDuplicado,
     limiteHoras,
-    guardarLimiteHoras,
   } = useEventos()
   const { avisar } = useAvisos()
   const refNombre = useRef(null)
@@ -46,7 +45,6 @@ export default function EditarEvento() {
 
   const [nombre, setNombre] = useState(evento?.nombre ?? '')
   const [fecha, setFecha] = useState(evento?.fecha ?? '')
-  const [limite, setLimite] = useState(limiteHoras)
   const [plan, setPlan] = useState(() =>
     (evento?.gestiones ?? []).map((g) => ({
       k: g.id,
@@ -95,11 +93,7 @@ export default function EditarEvento() {
     acc[g.fecha] = (acc[g.fecha] || 0) + (Number(g.horas) || 0)
     return acc
   }, {})
-  const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limite))
-
-  function cambiarLimite(valor) {
-    setLimite(valor)
-  }
+  const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limiteHoras))
 
   function validarNombreEnTiempoReal(texto) {
     if (!texto.trim()) return 'Escribe un nombre para reconocer el evento.'
@@ -112,21 +106,7 @@ export default function EditarEvento() {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    const valorLimite = Number(limite)
-
-    if (
-      limite === '' ||
-      !Number.isFinite(valorLimite) ||
-      valorLimite < 1 ||
-      valorLimite > 12 ||
-      valorLimite * 2 !== Math.round(valorLimite * 2)
-    ) {
-      setErrores((prev) => ({
-        ...prev,
-        limite: 'El límite debe estar entre 1 y 12 horas, en pasos de 0.5.',
-      }))
-      return
-    }
+    const valorLimite = Number(limiteHoras)
 
     const nuevos = {}
     if (!nombre.trim()) nuevos.nombre = 'Escribe un nombre para reconocer el evento.'
@@ -176,10 +156,6 @@ export default function EditarEvento() {
         ...nuevas.map((g) => agregarGestion(evento.id, g)),
 
         ...eliminadas.map((g) => eliminarGestion(g.id)),
-
-        limiteCambio
-          ? guardarLimiteHoras(valorLimite)
-          : null,
       ])
 
       avisar('Cambios guardados')
@@ -233,36 +209,9 @@ export default function EditarEvento() {
               <label className="campo__label" htmlFor="f-fecha">Fecha del evento</label>
               <input id="f-fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
             </div>
-            <div className="campo">
-              <label className="campo__label" htmlFor="f-limite">Límite de horas al día</label>
-              <input
-                id="f-limite"
-                type="number"
-                min="1"
-                max="12"
-                step="0.5"
-                value={limite}
-                aria-invalid={(limite === '' || Number(limite) <= 0) ? 'true' : undefined}
-                aria-describedby={(limite === '' || Number(limite) <= 0) ? 'err-limite' : undefined}
-                onKeyDown={(e) => {
-                  if (['-', '+', 'e', 'E'].includes(e.key)) e.preventDefault()
-                }}
-                onChange={(e) => {
-                  cambiarLimite(e.target.value)
-                  setErrores((prev) => ({ ...prev, limite: '' }))
-                }}
-              />
-            </div>
+            
           </div>
-          {errores.limite ? (
-            <p className="campo__error" id="err-limite">
-              {errores.limite}
-            </p>
-          ) : (
-            <p className="campo__ayuda">
-              Usamos el límite para avisarte cuando un día acumule más gestiones de las que puedes atender.
-            </p>
-          )}
+          
         </section>
 
         <section className="bloque">
