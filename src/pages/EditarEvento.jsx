@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEventos, useAvisos } from '../context/contextos.js'
-import { formatoHoras, mayuscula, nombreDia } from '../lib/fechas.js'
+import { formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
 import './crear.css'
 
 // Compara los datos editados de una gestión contra los originales y
@@ -16,11 +16,15 @@ function diferencia(original, editado) {
   return cambios
 }
 
+// Fila nueva del plan: sin "id" todavía (se crea en la API recién al
+// guardar), con una "k" de React única que no choca con ids reales.
+const gestionNueva = (k) => ({ k, id: null, nombre: '', fecha: hoyISO(), hora: '09:00', horas: 1 })
+
 // T-edición: corregir un evento ya creado (nombre, fecha, o su plan de
 // trabajo) sin tener que eliminarlo y volver a crearlo desde cero.
-// Nota: la API permite editar y borrar gestiones existentes, pero no
-// añadir gestiones nuevas a un evento ya creado — por eso aquí no hay
-// botón de "Añadir gestión" como en Crear.
+// Las gestiones existentes se editan/borran como antes; las gestiones
+// nuevas que se agreguen aquí se crean con POST /eventos/<id>/subtareas/
+// al guardar.
 export default function EditarEvento() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -28,6 +32,7 @@ export default function EditarEvento() {
     obtenerEvento,
     editarEvento,
     editarGestion,
+    agregarGestion,
     eliminarGestion,
     nombreDuplicado,
     limiteHoras,
@@ -35,6 +40,8 @@ export default function EditarEvento() {
   } = useEventos()
   const { avisar } = useAvisos()
   const refNombre = useRef(null)
+  const refsNombreGestion = useRef({})
+  const refAgregar = useRef(null)
   const evento = obtenerEvento(id)
 
   const [nombre, setNombre] = useState(evento?.nombre ?? '')
@@ -50,6 +57,7 @@ export default function EditarEvento() {
       horas: g.horas,
     })),
   )
+  const [siguienteNuevaK, setSiguienteNuevaK] = useState(1)
   const [errores, setErrores] = useState({})
   const [guardando, setGuardando] = useState(false)
 
@@ -69,7 +77,17 @@ export default function EditarEvento() {
   const actualizar = (k, campo, valor) =>
     setPlan((prev) => prev.map((g) => (g.k === k ? { ...g, [campo]: valor } : g)))
 
-  const quitar = (k) => setPlan((prev) => prev.filter((g) => g.k !== k))
+  const quitar = (k) => {
+    setPlan((prev) => prev.filter((g) => g.k !== k))
+    requestAnimationFrame(() => refAgregar.current?.focus())
+  }
+
+  function agregarFilaGestion() {
+    const k = `nueva-${siguienteNuevaK}`
+    setPlan((prev) => [...prev, gestionNueva(k)])
+    setSiguienteNuevaK((n) => n + 1)
+    requestAnimationFrame(() => refsNombreGestion.current[k]?.focus())
+  }
 
   const totalHoras = plan.reduce((s, g) => s + (Number(g.horas) || 0), 0)
 
@@ -133,7 +151,10 @@ export default function EditarEvento() {
       if (nombre.trim() !== evento.nombre) cambiosEvento.nombre = nombre.trim()
       if (fecha !== evento.fecha) cambiosEvento.fecha = fecha
 
-      const idsActuales = new Set(plan.map((g) => g.id))
+      const existentes = plan.filter((g) => g.id != null)
+      const nuevas = plan.filter((g) => g.id == null)
+
+      const idsActuales = new Set(existentes.map((g) => g.id))
       const eliminadas = evento.gestiones.filter((g) => !idsActuales.has(g.id))
 
       const limiteCambio = valorLimite !== Number(limiteHoras)
@@ -143,7 +164,7 @@ export default function EditarEvento() {
           ? editarEvento(evento.id, cambiosEvento)
           : null,
 
-        ...plan.map((g) => {
+        ...existentes.map((g) => {
           const original = evento.gestiones.find((og) => og.id === g.id)
           const cambios = diferencia(original, g)
 
@@ -151,6 +172,8 @@ export default function EditarEvento() {
             ? editarGestion(g.id, cambios)
             : null
         }),
+
+        ...nuevas.map((g) => agregarGestion(evento.id, g)),
 
         ...eliminadas.map((g) => eliminarGestion(g.id)),
 
@@ -249,8 +272,9 @@ export default function EditarEvento() {
           </h2>
 
           <p className="campo__ayuda">
-            Corrige el nombre, el día, la hora o las horas estimadas de cada gestión. Si quitas
-            una, se elimina al guardar.
+            Corrige el nombre, el día, la hora o las horas estimadas de cada gestión, o añade
+            gestiones nuevas al plan. Si quitas una, se elimina (o se descarta, si aún no se
+            había guardado) al guardar.
           </p>
 
           <ul className="subtareas">
@@ -258,6 +282,7 @@ export default function EditarEvento() {
               <li className="subtarea" key={g.k}>
                 <input
                   className="subtarea__nombre"
+                  ref={(el) => (refsNombreGestion.current[g.k] = el)}
                   aria-label={`Nombre de la gestión ${i + 1}`}
                   value={g.nombre}
                   onChange={(e) => actualizar(g.k, 'nombre', e.target.value)}
@@ -309,6 +334,15 @@ export default function EditarEvento() {
           </ul>
 
           {errores.plan && <p className="campo__error">{errores.plan}</p>}
+
+          <button
+            type="button"
+            className="btn btn--fantasma btn--sm"
+            ref={refAgregar}
+            onClick={agregarFilaGestion}
+          >
+            Añadir gestión
+          </button>
 
           <div className={'total' + (sobrecargados.length > 0 ? ' total--excedido' : '')}>
             <span>Total estimado del plan</span>
