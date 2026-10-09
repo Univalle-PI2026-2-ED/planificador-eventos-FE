@@ -74,6 +74,10 @@ export function eliminarEventoApi(id) {
   return peticion(`/eventos/${id}/`, { metodo: 'DELETE' })
 }
 
+export function agregarGestionApi(eventoId, datos) {
+  return peticion(`/eventos/${eventoId}/subtareas/`, { metodo: 'POST', cuerpo: datos })
+}
+
 export function editarGestionApi(id, cambios) {
   return peticion(`/gestiones/${id}/`, { metodo: 'PATCH', cuerpo: cambios })
 }

@@ -8,6 +8,7 @@ import {
   editarGestionApi,
   reprogramarGestionApi,
   eliminarGestionApi,
+  agregarGestionApi,
   obtenerPreferenciasApi,
   guardarPreferenciasApi,
 } from '../lib/api.js'
@@ -189,6 +190,28 @@ export function EventosProvider({ children }) {
     [cambiarGestion],
   )
 
+  // Añade una gestión nueva a un evento ya creado (POST /eventos/<id>/subtareas/),
+  // a diferencia de agregarEvento, que crea el evento y su plan juntos.
+  const agregarGestion = useCallback(
+    async (eventoId, datos) => {
+      const payload = {
+        nombre: datos.nombre.trim(),
+        fecha: datos.fecha,
+        hora: datos.hora,
+        horas: Number(datos.horas),
+      }
+      const nueva = await agregarGestionApi(eventoId, payload)
+      setEventos((prev) =>
+        prev.map((ev) =>
+          ev.id === eventoId ? { ...ev, gestiones: [...ev.gestiones, nueva] } : ev,
+        ),
+      )
+      anotar('Agregaste', nueva.nombre)
+      return nueva
+    },
+    [anotar],
+  )
+
   const eliminarGestion = useCallback(
     async (gestionId) => {
       const g = gestiones.find((x) => x.id === gestionId)
@@ -265,6 +288,7 @@ export function EventosProvider({ children }) {
       agregarEvento,
       editarEvento,
       editarGestion,
+      agregarGestion,
       eliminarEvento,
       eliminarGestion,
       marcarGestion,
@@ -277,7 +301,7 @@ export function EventosProvider({ children }) {
       eventos, gestiones, limiteHoras, guardarLimiteHoras,
       estadoCarga, cargar, bitacora, anotar,
       gestionesDelDia, horasDelDia, obtenerEvento, obtenerGestion, nombreDuplicado,
-      agregarEvento, editarEvento, editarGestion, eliminarEvento, eliminarGestion,
+      agregarEvento, editarEvento, editarGestion, agregarGestion, eliminarEvento, eliminarGestion,
       marcarGestion, guardarNota, reprogramarGestion, posponerGestion,
     ],
   )
