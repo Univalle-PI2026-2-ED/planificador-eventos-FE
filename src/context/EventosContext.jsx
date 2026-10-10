@@ -109,7 +109,7 @@ export function EventosProvider({ children }) {
   const horasDelDia = useCallback(
     (iso, excluirId = null) =>
       gestiones
-        .filter((g) => g.fecha === iso && g.estado !== 'hecho' && g.id !== excluirId)
+        .filter((g) => g.fecha === iso && g.estado !== 'hecho' && g.estado !== 'pospuesto' && g.id !== excluirId)
         .reduce((suma, g) => suma + Number(g.horas || 0), 0),
     [gestiones],
   )

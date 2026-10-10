@@ -51,7 +51,7 @@ export default function Hoy() {
     clase: clasificar(g),
     atrasada: g.fecha < hoy,
   }))
-  const pendientes = gestiones.filter((g) => g.estado !== 'hecho')
+  const pendientes = gestiones.filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto')
 
   const estado =
     demo !== 'auto' ? demo
@@ -76,10 +76,13 @@ export default function Hoy() {
   )
   const vencidas = visibles.filter((g) => g.clase === 'vencido')
   const paraHoy = visibles.filter(
-    (g) => g.fecha === hoy && ['urgente', 'proximo', 'pospuesto'].includes(g.clase),
+    (g) => g.fecha === hoy && ['urgente', 'proximo'].includes(g.clase),
   )
-  const proximasVisibles = visibles.filter((g) => g.fecha > hoy && g.clase !== 'hecho')
-  const hechas = visibles.filter((g) => g.clase === 'hecho')
+       const proximasVisibles = visibles.filter(
+        (g) => g.fecha > hoy && g.clase !== 'hecho' && g.clase !== 'pospuesto',
+      )
+      const pospuestas = visibles.filter((g) => g.clase === 'pospuesto')
+    const hechas = visibles.filter((g) => g.clase === 'hecho')
 
   function quitarFiltros() {
     setFiltroEstado('todas')
@@ -221,6 +224,7 @@ export default function Hoy() {
           <Grupo titulo="Gestiones vencidas" items={vencidas} destacado />
           <Grupo titulo="Para hoy" items={paraHoy} />
           <Grupo titulo={`Próximas (${N_DIAS} días)`} items={proximasVisibles} />
+          <Grupo titulo="Pospuestas" items={pospuestas} />
           <Grupo titulo="Completadas" items={hechas} />
 
           <details className="reglas">
@@ -229,7 +233,7 @@ export default function Hoy() {
               <li>Primero van las <strong>vencidas</strong>, con la más antigua arriba.</li>
               <li>Después las de <strong>hoy</strong> y luego las <strong>próximas</strong>, por fecha más cercana.</li>
               <li>Si coinciden en fecha, va primero la que <strong>menos horas</strong> toma.</li>
-              <li>Las hechas van al final, en "Completadas".</li>
+              <li>Las pospuestas y las hechas van al final y no cuentan como urgentes ni suman a la carga del día.</li>
             </ul>
           </details>
         </>

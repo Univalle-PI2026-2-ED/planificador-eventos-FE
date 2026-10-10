@@ -14,7 +14,7 @@ const TABS = [
 export default function Layout() {
   const { gestionesDelDia } = useEventos()
   const { cerrarSesion } = useAuth()
-  const pendientes = gestionesDelDia(hoyISO()).filter((g) => g.estado !== 'hecho').length
+  const pendientes = gestionesDelDia(hoyISO()).filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto').length
   const [sidebarAbierta, setSidebarAbierta] = useState(true)
 
   return (

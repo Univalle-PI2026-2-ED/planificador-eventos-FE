@@ -114,11 +114,11 @@ export default function EditarEvento() {
       if (!cambio) continue
 
       const deOtrosEventos = gestiones
-        .filter((x) => x.fecha === g.fecha && x.estado !== 'hecho' && !idsDelEvento.has(x.id))
+        .filter((x) => x.fecha === g.fecha && x.estado !== 'hecho' && x.estado !== 'pospuesto' &&  !idsDelEvento.has(x.id))
         .reduce((s, x) => s + Number(x.horas || 0), 0)
 
       const deEsteEvento = plan
-        .filter((p) => p.fecha === g.fecha && p.estado !== 'hecho')
+        .filter((p) => p.fecha === g.fecha && p.estado !== 'hecho' && p.estado !== 'pospuesto')
         .reduce((s, p) => s + (Number(p.horas) || 0), 0)
 
       if (deOtrosEventos + deEsteEvento > limite) return g

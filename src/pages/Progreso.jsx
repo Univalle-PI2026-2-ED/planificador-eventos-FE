@@ -12,7 +12,7 @@ const claseSegmento = (g) => {
 
 // T4: registro de lo ejecutado y barra de preparación por evento.
 export default function Progreso() {
-  const { eventos, bitacora } = useEventos()
+  const { eventos, bitacora, estadoCarga, cargar } = useEventos()
 
   return (
     <div className="progreso vista">
@@ -21,7 +21,22 @@ export default function Progreso() {
         Un tramo por gestión. Verde es hecha, rojo es vencida y rayado es pospuesta.
       </p>
 
-      {eventos.length === 0 && (
+      {estadoCarga === 'cargando' && (
+        <p className="state__texto" role="status">Cargando tu progreso…</p>
+      )}
+
+      {estadoCarga === 'error' && (
+        <section className="state state--error">
+          <h2 className="state__titulo">No pudimos cargar tu progreso</h2>
+          <p className="state__texto">
+            La conexión con el servidor falló. Revisa tu internet y vuelve a intentarlo.
+          </p>
+          <button type="button" className="btn btn--fantasma" onClick={cargar}>
+            Reintentar
+          </button>
+        </section>
+      )}
+      {estadoCarga === 'exito' && eventos.length === 0 && (
         <section className="state state--vacio">
           <h2 className="state__titulo">Todavía no hay eventos</h2>
           <p className="state__texto">Cuando crees uno, aquí verás cuánto llevas preparado.</p>
@@ -29,7 +44,7 @@ export default function Progreso() {
         </section>
       )}
 
-      {eventos.map((ev) => {
+      {estadoCarga === 'exito' && eventos.map((ev) => {
         const hechas = ev.gestiones.filter((g) => g.estado === 'hecho').length
         const pct = ev.gestiones.length ? Math.round((hechas / ev.gestiones.length) * 100) : 0
         const faltan = ev.gestiones
@@ -65,6 +80,7 @@ export default function Progreso() {
       <div className="leyenda">
         <span className="leyenda__item"><i className="leyenda__muestra leyenda__muestra--hecho" />Hecha</span>
         <span className="leyenda__item"><i className="leyenda__muestra leyenda__muestra--vencido" />Vencida</span>
+        <span className="leyenda__item"><i className="leyenda__muestra leyenda__muestra--pospuesto" />Pospuesta</span>
         <span className="leyenda__item"><i className="leyenda__muestra" />Pendiente</span>
       </div>
 
@@ -72,7 +88,7 @@ export default function Progreso() {
         <h2 className="bitacora__titulo">Lo que registraste hoy</h2>
         {bitacora.length === 0 ? (
           <p className="bitacora__vacio">
-            Aún no registras nada hoy. Marca una gestión como hecha y aparecerá aquí.
+            Aún no registras nada hoy. Marca una gestión como hecha o pospuesta y aparecerá aquí.
           </p>
         ) : (
           <ul className="bitacora__lista">
