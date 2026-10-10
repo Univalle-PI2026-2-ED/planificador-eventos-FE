@@ -2,7 +2,9 @@ import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEventos, useAvisos } from '../context/contextos.js'
 import { formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
+import DialogoReprogramar from '../components/DialogoReprogramar.jsx'
 import './crear.css'
+import './evento.css'
 
 // Compara los datos editados de una gestión contra los originales y
 // devuelve solo los campos que de verdad cambiaron (para no mandar PATCH
@@ -36,6 +38,7 @@ export default function EditarEvento() {
     eliminarGestion,
     nombreDuplicado,
     limiteHoras,
+    gestiones,
   } = useEventos()
   const { avisar } = useAvisos()
   const refNombre = useRef(null)
@@ -53,11 +56,13 @@ export default function EditarEvento() {
       fecha: g.fecha,
       hora: g.hora.slice(0, 5),
       horas: g.horas,
+      estado: g.estado,
     })),
   )
   const [siguienteNuevaK, setSiguienteNuevaK] = useState(1)
   const [errores, setErrores] = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [reprogramando, setReprogramando] = useState(null)
 
   if (!evento) {
     return (
@@ -95,6 +100,32 @@ export default function EditarEvento() {
   }, {})
   const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limiteHoras))
 
+  function buscarConflicto() {
+    const limite = Number(limiteHoras)
+    const idsDelEvento = new Set(evento.gestiones.map((g) => g.id))
+
+    for (const g of plan) {
+      if (g.id == null) continue
+      const original = evento.gestiones.find((og) => og.id === g.id)
+      if (!original || original.estado === 'hecho') continue
+
+      const cambio =
+        Number(g.horas) !== Number(original.horas) || g.fecha !== original.fecha
+      if (!cambio) continue
+
+      const deOtrosEventos = gestiones
+        .filter((x) => x.fecha === g.fecha && x.estado !== 'hecho' && !idsDelEvento.has(x.id))
+        .reduce((s, x) => s + Number(x.horas || 0), 0)
+
+      const deEsteEvento = plan
+        .filter((p) => p.fecha === g.fecha && p.estado !== 'hecho')
+        .reduce((s, p) => s + (Number(p.horas) || 0), 0)
+
+      if (deOtrosEventos + deEsteEvento > limite) return g
+    }
+    return null
+  }
+
   function validarNombreEnTiempoReal(texto) {
     if (!texto.trim()) return 'Escribe un nombre para reconocer el evento.'
     if (nombreDuplicado(texto, evento.id)) {
@@ -103,16 +134,43 @@ export default function EditarEvento() {
     return ''
   }
 
+  function buscarConflicto() {
+    const limite = Number(limiteHoras)
+    const idsDelEvento = new Set(evento.gestiones.map((g) => g.id))
+
+    for (const g of plan) {
+      if (g.id == null) continue
+      const original = evento.gestiones.find((og) => og.id === g.id)
+      if (!original || original.estado === 'hecho') continue
+
+      const cambio =
+        Number(g.horas) !== Number(original.horas) || g.fecha !== original.fecha
+      if (!cambio) continue
+
+      const deOtrosEventos = gestiones
+        .filter((x) => x.fecha === g.fecha && x.estado !== 'hecho' && !idsDelEvento.has(x.id))
+        .reduce((s, x) => s + Number(x.horas || 0), 0)
+
+      const deEsteEvento = plan
+        .filter((p) => p.fecha === g.fecha && p.estado !== 'hecho')
+        .reduce((s, p) => s + (Number(p.horas) || 0), 0)
+
+      if (deOtrosEventos + deEsteEvento > limite) return g
+    }
+    return null
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
-
-    const valorLimite = Number(limiteHoras)
 
     const nuevos = {}
     if (!nombre.trim()) nuevos.nombre = 'Escribe un nombre para reconocer el evento.'
     else if (nombreDuplicado(nombre, evento.id)) {
       nuevos.nombre = 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
     }
+
+    if (!fecha) nuevos.fecha = 'Elige la fecha del evento.' 
+
     if (plan.length === 0) nuevos.plan = 'El evento necesita al menos una gestión en su plan.'
     else if (plan.some((g) => !g.nombre.trim() || !g.hora || !g.fecha)) {
       nuevos.plan = 'Cada gestión necesita un nombre, un día y una hora.'
@@ -122,6 +180,13 @@ export default function EditarEvento() {
     setErrores(nuevos)
     if (Object.keys(nuevos).length > 0) {
       if (nuevos.nombre) refNombre.current?.focus()
+      return
+    }
+
+    const conflicto = buscarConflicto()
+    if (conflicto) {
+      const original = evento.gestiones.find((og) => og.id === conflicto.id)
+      setReprogramando({ ...original, fecha: conflicto.fecha, horas: Number(conflicto.horas) })
       return
     }
 
@@ -136,8 +201,6 @@ export default function EditarEvento() {
 
       const idsActuales = new Set(existentes.map((g) => g.id))
       const eliminadas = evento.gestiones.filter((g) => !idsActuales.has(g.id))
-
-      const limiteCambio = valorLimite !== Number(limiteHoras)
 
       await Promise.all([
         Object.keys(cambiosEvento).length > 0
@@ -207,7 +270,8 @@ export default function EditarEvento() {
           <div className="fila-campos">
             <div className="campo">
               <label className="campo__label" htmlFor="f-fecha">Fecha del evento</label>
-              <input id="f-fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+              <input id="f-fecha" type="date" value={fecha} aria-invalid={errores.fecha ? 'true' : undefined} onChange={(e) => setFecha(e.target.value)} />
+              {errores.fecha && <p className="campo__error">{errores.fecha}</p>}
             </div>
             
           </div>
@@ -305,7 +369,7 @@ export default function EditarEvento() {
                 {sobrecargados
                   .map(([dia, h]) => `${mayuscula(nombreDia(dia))} acumula ${formatoHoras(h)}`)
                   .join('. ')}
-                . Puedes guardarlo igual: podrás reprogramar lo que sobra después.
+                . Al guardar te ayudaremos a reprogramar lo que sobra.
               </p>
             </div>
           )}
@@ -320,6 +384,17 @@ export default function EditarEvento() {
           </button>
         </div>
       </form>
+      <DialogoReprogramar
+        key={reprogramando?.id ?? 'cerrado'}
+        gestion={reprogramando}
+        onCerrar={() => setReprogramando(null)}
+        onReprogramada={(r) => {
+          setPlan((prev) =>
+            prev.map((g) => (g.id === r.id ? { ...g, fecha: r.fecha, horas: r.horas } : g)),
+          )
+          avisar('Gestión reprogramada. Guarda para aplicar el resto de los cambios.')
+        }}
+      />
     </div>
   )
 }

@@ -19,6 +19,7 @@ export default function Crear() {
   const [plan, setPlan] = useState([])
   const [siguienteK, setSiguienteK] = useState(1)
   const [errores, setErrores] = useState({})
+  const [guardando, setGuardando] = useState(false)
 
   const actualizar = (k, campo, valor) =>
     setPlan((prev) => prev.map((g) => (g.k === k ? { ...g, [campo]: valor } : g)))
@@ -61,6 +62,7 @@ export default function Crear() {
     else if (nombreDuplicado(nombre)) {
       nuevos.nombre = 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
     }
+    if (!fecha) nuevos.fecha = 'Elige la fecha del evento.'
     if (plan.length === 0) nuevos.plan = 'Añade al menos una gestión al plan.'
     else if (plan.some((g) => !g.nombre.trim() || !g.hora || !g.fecha)) {
       nuevos.plan = 'Cada gestión necesita un nombre, un día y una hora.'
@@ -73,6 +75,8 @@ export default function Crear() {
       return
     }
 
+    setGuardando(true)
+
     try {
       const evento = await agregarEvento({ nombre, fecha, gestiones: plan })
       avisar('Evento creado exitosamente')
@@ -84,7 +88,9 @@ export default function Crear() {
       } else {
         avisar('No se pudo crear el evento. Intenta de nuevo.')
       }
-    }
+    } finally {
+      setGuardando(false)
+    }   
   }
 
   return (
@@ -121,7 +127,8 @@ export default function Crear() {
           <div className="fila-campos">
             <div className="campo">
               <label className="campo__label" htmlFor="f-fecha">Fecha del evento</label>
-              <input id="f-fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+              <input id="f-fecha" type="date" value={fecha} aria-invalid={errores.fecha ? 'true' : undefined} onChange={(e) => setFecha(e.target.value)} />
+              {errores.fecha && <p className="campo__error">{errores.fecha}</p>}
             </div>
           </div>
         </section>
@@ -219,7 +226,9 @@ export default function Crear() {
         </section>
 
         <div className="crear__acciones">
-          <button type="submit" className="btn btn--full">Guardar evento</button>
+          <button type="submit" className="btn btn--full" disabled={guardando}>
+            {guardando ? 'Guardando…' : 'Guardar evento'}
+          </button>
           <button type="button" className="btn--texto" onClick={() => navigate('/hoy')}>Cancelar</button>
         </div>
       </form>
