@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react'
 import { useEventos, useAvisos } from '../context/contextos.js'
 import {
@@ -9,7 +8,7 @@ import {
   sumarDias,
 } from '../lib/fechas.js'
 
-export default function DialogoReprogramar({ gestion, onCerrar }) {
+export default function DialogoReprogramar({ gestion, onCerrar, onReprogramar }) {
   const ref = useRef(null)
 
   const {
@@ -97,7 +96,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
     })
   }
 
-  if (excede && candidata) {
+  if (excede && candidata && total - Number(candidata.horas) <= limite) {
     opciones.push({
       valor: 'posponer',
       titulo: `Posponer "${candidata.nombre}"`,
@@ -110,16 +109,18 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
   async function confirmar() {
 
     if (guardando) return
-    setGuardando(true)
 
     if (!estimacionValida) {
       avisar('La estimación debe ser de al menos 0,5 horas y avanzar en intervalos de 0,5.')
       return
     }
 
+    setGuardando(true)
+    let resultado = null
+
     try {
       if (!excede) {
-        await reprogramarGestion(gestion.id, {
+        resultado = await reprogramarGestion(gestion.id, {
           fecha: destino,
           horas: horasPropuestas,
         })
@@ -131,7 +132,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
 
         avisar(mensaje)
       } else if (opcion === 'mover') {
-        await reprogramarGestion(gestion.id, {
+        resultado = await reprogramarGestion(gestion.id, {
           fecha: diaLibre,
           horas: horasPropuestas,
         })
@@ -142,7 +143,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
       } else if (opcion === 'reducir') {
         const nuevasHoras = Math.max(0.5, margen)
 
-        await reprogramarGestion(gestion.id, {
+        resultado = await reprogramarGestion(gestion.id, {
           fecha: destino,
           horas: nuevasHoras,
         })
@@ -153,7 +154,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
       } else if (opcion === 'posponer') {
         await posponerGestion(candidata.id, sumarDias(destino, 1))
 
-        await reprogramarGestion(gestion.id, {
+        resultado = await reprogramarGestion(gestion.id, {
           fecha: destino,
           horas: horasPropuestas,
         })
@@ -164,7 +165,7 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
       } else {
         return
       }
-
+      onReprogramada?.(resultado)
       onCerrar()
     } catch (error) {
       console.error('Error al reprogramar la gestión:', error)
@@ -224,20 +225,17 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
             Nueva fecha
           </label>
 
-          <select
+          <input
             id="destino"
+            type="date"
+            min={hoyISO()}
             value={destino}
             onChange={(e) => {
+              if (!e.target.value) return
               setDestino(e.target.value)
               setOpcion('')
             }}
-          >
-            {dias.map((d) => (
-              <option key={d} value={d}>
-                {nombreDia(d)} — {formatoHoras(libres(d))} ya planeadas
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="campo">
@@ -302,9 +300,9 @@ export default function DialogoReprogramar({ gestion, onCerrar }) {
               </span>
 
               <p className="aviso__texto">
-                {mayuscula(nombreDia(destino))} acumularía{' '}
-                {formatoHoras(total)} de gestión y tu límite es{' '}
-                {formatoHoras(limite)} al día. Elige cómo resolverlo:
+                Quedarías con {formatoHoras(total)} de gestión planificadas
+                (límite {formatoHoras(limite)}) {nombreDia(destino)}. Elige cómo
+                resolverlo:
               </p>
             </div>
 

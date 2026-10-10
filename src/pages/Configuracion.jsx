@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useEventos, useAvisos } from '../context/contextos.js'
+import { formatoHoras, hoyISO, nombreDia } from '../lib/fechas.js'
 import './configuracion.css'
 
 export default function Configuracion() {
-  const { limiteHoras, guardarLimiteHoras } = useEventos()
+  const { limiteHoras, guardarLimiteHoras, gestiones } = useEventos()
   const { avisar } = useAvisos()
-
+  
   const [limite, setLimite] = useState(String(limiteHoras))
   const [error, setError] = useState('')
   const [guardando, setGuardando] = useState(false)
@@ -24,10 +25,30 @@ export default function Configuracion() {
       limite.trim() === '' ||
       !Number.isFinite(valorLimite) ||
       valorLimite < 1 ||
-      valorLimite > 12 ||
+      valorLimite > 16 ||
       valorLimite * 2 !== Math.round(valorLimite * 2)
     ) {
-      setError('El límite debe estar entre 1 y 12 horas, en pasos de 0.5.')
+      setError('El límite debe estar entre 1 y 16 horas, en pasos de 0.5.')
+      return
+    }
+    
+    const horasPorDia = gestiones
+      .filter((g) => g.estado !== 'hecho' && g.fecha >= hoyISO())
+      .reduce((acc, g) => {
+        acc[g.fecha] = (acc[g.fecha] || 0) + Number(g.horas || 0)
+        return acc
+      }, {})
+    const diasExcedidos = Object.entries(horasPorDia)
+      .filter(([, h]) => h > valorLimite)
+      .sort((a, b) => b[1] - a[1])
+
+    if (diasExcedidos.length > 0) {
+      const [dia, h] = diasExcedidos[0]
+      setError(
+        `No puedes bajar el límite a ${formatoHoras(valorLimite)}: ` +
+          `${nombreDia(dia)} ya tiene ${formatoHoras(h)} planeadas. ` +
+          `Reprograma o reduce esas gestiones primero.`,
+      )
       return
     }
 
@@ -78,7 +99,7 @@ export default function Configuracion() {
                 name="limite-horas"
                 type="number"
                 min="1"
-                max="12"
+                max="16"
                 step="0.5"
                 value={limite}
                 onChange={(e) => {
@@ -98,7 +119,7 @@ export default function Configuracion() {
               </p>
             ) : (
               <p className="configuracion__ayuda" id="ayuda-limite">
-                Valores de 1 a 12 horas, en incrementos de media hora.
+                Valores de 1 a 16 horas, en incrementos de media hora.
               </p>
             )}
           </div>

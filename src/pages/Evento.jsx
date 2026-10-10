@@ -38,7 +38,7 @@ export default function Evento() {
   }
 
   const hechas = evento.gestiones.filter((g) => g.estado === 'hecho').length
-  const pct = Math.round((hechas / evento.gestiones.length) * 100)
+  const pct = evento.gestiones.length ? Math.round((hechas / evento.gestiones.length) * 100) : 0
   const dias = [...new Set(evento.gestiones.map((g) => g.fecha))].sort()
 
   async function alternar(gestion, marcado) {

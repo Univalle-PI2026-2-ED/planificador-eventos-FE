@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useEventos } from '../context/contextos.js'
-import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
+import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia, sumarDias } from '../lib/fechas.js'
 import { clasificar, cuantoFalta, esAtrasada, ETIQUETA, PRIORIDAD, UMBRAL_URGENTE_MIN } from '../lib/prioridad.js'
 import { useReloj } from '../lib/useReloj.js'
 import './hoy.css'
@@ -21,6 +21,7 @@ function coincideEstado(gestion, filtro) {
   return true
 }
 
+const N_DIAS = 7
 const plural = (n) => `${n} ${n === 1 ? 'gestión' : 'gestiones'}`
 
 // T2: la vista "Hoy" separa lo que exige acción de lo que puede esperar.
@@ -42,7 +43,10 @@ export default function Hoy() {
   const atrasadas = todas
     .filter((g) => esAtrasada(g, hoy))
     .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora))
-  const gestiones = [...atrasadas, ...gestionesDelDia(hoy)].map((g) => ({
+  const proximas = todas.filter(
+    (g) => g.fecha > hoy && g.fecha <= sumarDias(hoy, N_DIAS),
+  )
+  const gestiones = [...atrasadas, ...gestionesDelDia(hoy), ...proximas].map((g) => ({
     ...g,
     clase: clasificar(g),
     atrasada: g.fecha < hoy,
@@ -70,9 +74,11 @@ export default function Hoy() {
       coincideEstado(g, filtroEstado) &&
       (eventoActivo === 'todos' || String(g.evento.id) === eventoActivo),
   )
-
-  const atencion = visibles.filter((g) => g.clase === 'vencido' || g.clase === 'urgente')
-  const luego = visibles.filter((g) => g.clase === 'proximo' || g.clase === 'pospuesto')
+  const vencidas = visibles.filter((g) => g.clase === 'vencido')
+  const paraHoy = visibles.filter(
+    (g) => g.fecha === hoy && ['urgente', 'proximo', 'pospuesto'].includes(g.clase),
+  )
+  const proximasVisibles = visibles.filter((g) => g.fecha > hoy && g.clase !== 'hecho')
   const hechas = visibles.filter((g) => g.clase === 'hecho')
 
   function quitarFiltros() {
@@ -212,20 +218,19 @@ export default function Hoy() {
             </section>
           )}
 
-          <Grupo titulo="Requiere atención ahora" items={atencion} destacado />
-          <Grupo titulo="Más tarde hoy" items={luego} />
+          <Grupo titulo="Gestiones vencidas" items={vencidas} destacado />
+          <Grupo titulo="Para hoy" items={paraHoy} />
+          <Grupo titulo={`Próximas (${N_DIAS} días)`} items={proximasVisibles} />
           <Grupo titulo="Completadas" items={hechas} />
 
           <details className="reglas">
-            <summary>¿Cómo decidimos qué es urgente?</summary>
+            <summary>¿Cómo se ordena esto?</summary>
             <ul>
-              <li><strong>Vencida:</strong> ya pasó su hora, o es de un día anterior y sigue pendiente.</li>
-              <li><strong>Urgente:</strong> faltan {UMBRAL_URGENTE_MIN} minutos o menos.</li>
-              <li><strong>Próxima:</strong> es de hoy y falta más tiempo; va en “Más tarde hoy”.</li>
-              <li>Las pospuestas van en “Más tarde hoy” y las hechas en “Completadas”; ninguna cuenta como urgente.</li>
-              <li>En cada grupo va primero lo vencido, luego lo urgente y, a igual prioridad, por fecha y hora.</li>
+              <li>Primero van las <strong>vencidas</strong>, con la más antigua arriba.</li>
+              <li>Después las de <strong>hoy</strong> y luego las <strong>próximas</strong>, por fecha más cercana.</li>
+              <li>Si coinciden en fecha, va primero la que <strong>menos horas</strong> toma.</li>
+              <li>Las hechas van al final, en "Completadas".</li>
             </ul>
-            <p>La lista se actualiza sola cada minuto.</p>
           </details>
         </>
       )}
@@ -235,7 +240,13 @@ export default function Hoy() {
 
 function Grupo({ titulo, items, destacado = false }) {
   if (items.length === 0) return null
-  const ordenadas = [...items].sort((a, b) => PRIORIDAD[a.clase] - PRIORIDAD[b.clase])
+  const ordenadas = [...items].sort(
+    (a, b) =>
+      PRIORIDAD[a.clase] - PRIORIDAD[b.clase] ||
+      a.fecha.localeCompare(b.fecha) ||
+      Number(a.horas) - Number(b.horas) ||
+      a.hora.localeCompare(b.hora),
+  )
 
   return (
     <section className={'grupo' + (destacado ? ' grupo--urgente' : '')}>
@@ -250,9 +261,11 @@ function Grupo({ titulo, items, destacado = false }) {
               <span className="evento__hora">{g.hora.slice(0, 5)}</span>
               <span className="evento__titulo">{g.nombre}</span>
               <span className="evento__meta">
-                {g.atrasada && (
+                {g.fecha !== hoyISO() && (
                   <>
-                    <strong className="evento__atraso">{mayuscula(nombreDia(g.fecha))}</strong>
+                    <strong className={g.atrasada ? 'evento__atraso' : undefined}>
+                      {mayuscula(nombreDia(g.fecha))}
+                    </strong>
                     <i className="evento__punto" />
                   </>
                 )}
