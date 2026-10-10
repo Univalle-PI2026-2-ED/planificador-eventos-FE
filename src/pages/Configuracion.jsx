@@ -33,7 +33,7 @@ export default function Configuracion() {
     }
     
     const horasPorDia = gestiones
-      .filter((g) => g.estado !== 'hecho' && g.fecha >= hoyISO())
+      .filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto' && g.fecha >= hoyISO())
       .reduce((acc, g) => {
         acc[g.fecha] = (acc[g.fecha] || 0) + Number(g.horas || 0)
         return acc

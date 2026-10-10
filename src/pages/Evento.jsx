@@ -44,12 +44,29 @@ export default function Evento() {
   async function alternar(gestion, marcado) {
     try {
       await marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
-      avisar(marcado ? 'Gestión marcada como hecha' : 'Gestión reabierta')
+        avisar(marcado ? `Listo: «${gestion.nombre}» quedó como hecha` : `«${gestion.nombre}» volvió a pendiente`,)
     } catch {
       avisar('No se pudo actualizar la gestión. Intenta de nuevo.')
     }
   }
 
+  async function posponer(gestion) {
+    try {
+      await marcarGestion(gestion.id, 'pospuesto')
+      avisar(`Pospusiste «${gestion.nombre}». Deja una nota para recordar por qué.`)
+    } catch {
+      avisar('No se pudo posponer la gestión. Intenta de nuevo.')
+    }
+  }
+
+  async function reabrir(gestion) {
+    try {
+      await marcarGestion(gestion.id, 'pendiente')
+      avisar(`«${gestion.nombre}» volvió a pendiente`)
+    } catch {
+      avisar('No se pudo reabrir la gestión. Intenta de nuevo.')
+    }
+  }
   async function confirmarEliminarEvento() {
     try {
       await eliminarEvento(evento.id)
@@ -97,6 +114,8 @@ export default function Evento() {
         <i className="evento__punto" />
         <span>
           <span className="num">{hechas}</span> de <span className="num">{evento.gestiones.length}</span> gestiones listas
+          {' · '}
+          <span className="num">{pct}%</span>
         </span>
       </p>
 
@@ -110,7 +129,7 @@ export default function Evento() {
         const delDia = evento.gestiones
           .filter((g) => g.fecha === dia)
           .sort((a, b) => a.hora.localeCompare(b.hora))
-        const horasDia = delDia.filter((g) => g.estado !== 'hecho').reduce((s, g) => s + Number(g.horas || 0), 0)
+        const horasDia = delDia.filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto').reduce((s, g) => s + Number(g.horas || 0), 0)
 
         return (
           <section key={dia}>
@@ -147,6 +166,26 @@ export default function Evento() {
                     </div>
 
                     <div className="gestion__acciones">
+                      {!hecho &&
+                        (g.estado === 'pospuesto' ? (
+                          <button
+                            type="button"
+                            className="btn btn--fantasma btn--sm"
+                            onClick={() => reabrir(g)}
+                            aria-label={`Reabrir ${g.nombre}`}
+                          >
+                            Reabrir
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn--fantasma btn--sm"
+                            onClick={() => posponer(g)}
+                            aria-label={`Posponer ${g.nombre}`}
+                          >
+                            Posponer
+                          </button>
+                        ))}
                       <button
                         type="button"
                         className="btn btn--fantasma btn--sm"
@@ -165,12 +204,16 @@ export default function Evento() {
                       </button>
                     </div>
 
-                    {hecho && (
+                    {(hecho || g.estado === 'pospuesto') && (
                       <input
                         className="gestion__nota"
                         key={`nota-${g.id}`}
                         defaultValue={g.nota}
-                        placeholder="Nota (opcional): ¿quedó algo pendiente?"
+                        placeholder={
+                          hecho
+                            ? 'Nota (opcional): ¿quedó algo pendiente?'
+                            : 'Nota (opcional): ¿por qué la pospones?'
+                        }
                         aria-label={`Nota de ${g.nombre}`}
                         onBlur={async (e) => {
                           if (e.target.value !== g.nota) {

@@ -73,7 +73,7 @@ export default function DialogoReprogramar({ gestion, onCerrar, onReprogramar })
   )
 
   const candidata = gestionesDelDia(destino)
-    .filter((g) => g.estado !== 'hecho' && g.id !== gestion.id)
+    .filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto' && g.id !== gestion.id)
     .sort((a, b) => Number(b.horas) - Number(a.horas))[0]
 
   const opciones = []
