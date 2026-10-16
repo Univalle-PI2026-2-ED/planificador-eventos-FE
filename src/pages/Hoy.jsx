@@ -46,11 +46,18 @@ export default function Hoy() {
   const proximas = todas.filter(
     (g) => g.fecha > hoy && g.fecha <= sumarDias(hoy, N_DIAS),
   )
-  const gestiones = [...atrasadas, ...gestionesDelDia(hoy), ...proximas].map((g) => ({
+  const recientes = todas.filter(
+    (g) =>
+      g.fecha < hoy &&
+      g.fecha >= sumarDias(hoy, -N_DIAS) &&
+      (g.estado === 'hecho' || g.estado === 'pospuesto'),
+  )
+  const gestiones = [...atrasadas, ...recientes, ...gestionesDelDia(hoy), ...proximas].map((g) => ({
     ...g,
     clase: clasificar(g),
-    atrasada: g.fecha < hoy,
+    atrasada: g.fecha < hoy && g.estado === 'pendiente',
   }))
+  
   const pendientes = gestiones.filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto')
 
   const estado =
