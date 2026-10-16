@@ -316,3 +316,102 @@
 .hito__texto {
   padding-left: 10px;
 }
+
+/* Tarjeta de progreso general: ocupa todo el ancho, arriba de los eventos */
+@media (min-width: 760px) {
+  .progreso > .avance--general {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- Progreso general: porcentaje a la izquierda, resumen a la derecha --- */
+.avance--general {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+
+.general__pct {
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-claro);
+}
+
+.general__cuerpo {
+  flex: 1;
+  min-width: 240px;
+  display: grid;
+  gap: 8px;
+}
+
+.general__barra {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--line);
+  overflow: hidden;
+}
+
+.general__barra > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--accent), var(--accent-claro));
+}
+
+.general__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.general__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border: 1px solid var(--line-fuerte);
+  border-radius: var(--radius-pill);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.general__chip::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.general__chip--ok {
+  color: var(--ok);
+  background: var(--ok-bg);
+  border-color: var(--ok-line);
+}
+
+.general__chip--pospuesto {
+  color: var(--ink-2);
+  border-style: dashed;
+}
+
+.general__chip--pospuesto::before {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--paper-2) 0 2px,
+    var(--ink-3) 2px 4px
+  );
+  border: 1px solid var(--line-fuerte);
+}
+
+.general__chip--err {
+  color: var(--err);
+  background: var(--err-bg);
+  border-color: var(--err-line);
+}
