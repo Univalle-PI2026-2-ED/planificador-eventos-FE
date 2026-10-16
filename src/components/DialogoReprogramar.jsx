@@ -3,12 +3,11 @@ import { useEventos, useAvisos } from '../context/contextos.js'
 import {
   formatoHoras,
   hoyISO,
-  mayuscula,
   nombreDia,
   sumarDias,
 } from '../lib/fechas.js'
 
-export default function DialogoReprogramar({ gestion, onCerrar, onReprogramar }) {
+export default function DialogoReprogramar({ gestion, onCerrar, onReprogramada }) {
   const ref = useRef(null)
 
   const {
@@ -61,6 +60,7 @@ export default function DialogoReprogramar({ gestion, onCerrar, onReprogramar })
   const estimacionValida =
     Number.isFinite(horasPropuestas) &&
     horasPropuestas >= 0.5 &&
+    horasPropuestas <= limite &&
     Math.round(horasPropuestas * 2) === horasPropuestas * 2
 
   const yaPlaneado = libres(destino)
@@ -111,7 +111,7 @@ export default function DialogoReprogramar({ gestion, onCerrar, onReprogramar })
     if (guardando) return
 
     if (!estimacionValida) {
-      avisar('La estimación debe ser de al menos 0,5 horas y avanzar en intervalos de 0,5.')
+        avisar(`La estimación debe estar entre 0,5 y ${formatoHoras(limite)}, en intervalos de 0,5.`)
       return
     }
 
@@ -247,6 +247,7 @@ export default function DialogoReprogramar({ gestion, onCerrar, onReprogramar })
             id="estimacion"
             type="number"
             min="0.5"
+            max={limite}
             step="0.5"
             value={estimacion}
             onChange={(e) => {

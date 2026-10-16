@@ -2,11 +2,11 @@ import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useEventos } from '../context/contextos.js'
 import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia, sumarDias } from '../lib/fechas.js'
-import { clasificar, cuantoFalta, esAtrasada, ETIQUETA, PRIORIDAD, UMBRAL_URGENTE_MIN } from '../lib/prioridad.js'
+import { clasificar, cuantoFalta, esAtrasada, ETIQUETA, PRIORIDAD, } from '../lib/prioridad.js'
 import { useReloj } from '../lib/useReloj.js'
 import './hoy.css'
 
-// Filtros básicos (US-05): todo ocurre en el cliente, sobre las gestiones de hoy.
+// Filtros básicos (US-05): todo ocurre en el client, sobre las gestiones de hoy.
 const FILTROS_ESTADO = [
   { clave: 'todas', texto: 'Todas' },
   { clave: 'atencion', texto: 'Urgentes y vencidas' },

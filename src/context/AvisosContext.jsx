@@ -7,13 +7,15 @@ import { AvisosContext } from './contextos.js'
 export function AvisosProvider({ children }) {
   const [avisos, setAvisos] = useState([])
 
+  const cerrar = useCallback((id) => {
+    setAvisos((prev) => prev.filter((a) => a.id !== id))
+  }, [])
+
   const avisar = useCallback((texto) => {
     const id = `${Date.now()}-${Math.random()}`
-    setAvisos((prev) => [...prev, { id, texto }])
-    setTimeout(() => {
-      setAvisos((prev) => prev.filter((a) => a.id !== id))
-    }, 2800)
-  }, [])
+    setAvisos((prev) => [...prev, { id, texto }].slice(-2))
+    setTimeout(() => cerrar(id), 4000)
+  }, [cerrar])
 
   const valor = useMemo(() => ({ avisar }), [avisar])
 
@@ -22,7 +24,17 @@ export function AvisosProvider({ children }) {
       {children}
       <div className="avisos" role="status" aria-live="polite">
         {avisos.map((a) => (
-          <p key={a.id} className="toast">{a.texto}</p>
+          <div key={a.id} className="toast">
+            <span className="toast__texto">{a.texto}</span>
+            <button
+              type="button"
+              className="toast__cerrar"
+              onClick={() => cerrar(a.id)}
+              aria-label="Cerrar aviso"
+            >
+              ×
+            </button>
+          </div>
         ))}
       </div>
     </AvisosContext.Provider>

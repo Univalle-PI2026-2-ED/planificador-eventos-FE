@@ -44,6 +44,8 @@ export default function Crear() {
     return acc
   }, {})
   const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limiteHoras))
+  const horasInvalidas = (h) =>   
+    h === '' || Number(h) <= 0 || Number(h) > Number(limiteHoras)
 
   function validarNombreEnTiempoReal(texto) {
     if (!texto.trim()) {
@@ -68,6 +70,8 @@ export default function Crear() {
       nuevos.plan = 'Cada gestión necesita un nombre, un día y una hora.'
     } else if (plan.some((g) => Number(g.horas) <= 0 || isNaN(Number(g.horas)))) {
       nuevos.plan = 'El tiempo estimado debe ser un número mayor a 0.'
+    } else if (plan.some((g) => Number(g.horas) > Number(limiteHoras))) {
+      nuevos.plan = `Ninguna gestión puede durar más que tu límite diario (${formatoHoras(limiteHoras)}). Divídela en dos o sube el límite en Configuración.`
     }
     setErrores(nuevos)
     if (Object.keys(nuevos).length > 0) {
@@ -178,11 +182,11 @@ export default function Crear() {
                   <input
                     type="number"
                     min="0.5"
-                    max="8"
+                    max={limiteHoras}
                     step="0.5"
                     aria-label={`Horas estimadas de la gestión ${i + 1}`}
-                    aria-invalid={(g.horas === '' || Number(g.horas) <= 0) ? 'true' : undefined}
-                    aria-describedby={(g.horas === '' || Number(g.horas) <= 0) ? `err-horas-${g.k}` : undefined}
+                    aria-invalid={horasInvalidas(g.horas) ? 'true' : undefined}
+                    aria-describedby={horasInvalidas(g.horas) ? `err-horas-${g.k}` : undefined}
                     value={g.horas}
                     onKeyDown={(e) => {
                       if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -192,9 +196,11 @@ export default function Crear() {
                     onChange={(e) => actualizar(g.k, 'horas', e.target.value > 0 ? e.target.value : '')}
                   />
                 </div>
-                {(g.horas === '' || Number(g.horas) <= 0) && (
+                {horasInvalidas(g.horas) && (
                   <p className="subtarea__error-texto" id={`err-horas-${g.k}`}>
-                    * El tiempo estimado debe ser mayor a 0 horas.
+                    {Number(g.horas) > Number(limiteHoras)
+                      ? `* No puede pasar de tu límite diario (${formatoHoras(limiteHoras)}).`
+                      : '* El tiempo estimado debe ser mayor a 0 horas.'}
                   </p>
                 )}
               </li>
