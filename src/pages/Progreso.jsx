@@ -13,6 +13,15 @@ const claseSegmento = (g) => {
 // T4: registro de lo ejecutado y barra de preparación por evento.
 export default function Progreso() {
   const { eventos, bitacora, estadoCarga, cargar } = useEventos()
+  const todas = eventos.flatMap((ev) => ev.gestiones)
+  const totalGestiones = todas.length
+  const totalHechas = todas.filter((g) => g.estado === 'hecho').length
+  const totalPospuestas = todas.filter((g) => g.estado === 'pospuesto').length
+  const totalVencidas = todas.filter(
+    (g) => g.estado !== 'hecho' && g.estado !== 'pospuesto' && clasificar(g) === 'vencido',
+  ).length
+  const totalPendientes = totalGestiones - totalHechas - totalPospuestas - totalVencidas
+  const pctGeneral = totalGestiones ? Math.round((totalHechas / totalGestiones) * 100) : 0
 
   return (
     <div className="progreso vista">
@@ -34,6 +43,33 @@ export default function Progreso() {
           <button type="button" className="btn btn--fantasma" onClick={cargar}>
             Reintentar
           </button>
+        </section>
+      )}
+      {estadoCarga === 'exito' && eventos.length > 0 && (
+        <section className="avance avance--general" aria-label="Progreso general">
+          <span className="general__pct">{pctGeneral}%</span>
+
+          <div className="general__cuerpo">
+            <h2 className="avance__nombre">Progreso general</h2>
+            <p className="avance__detalle">
+              {totalHechas} de {totalGestiones} gestiones completadas en {eventos.length} eventos.
+            </p>
+
+            <div
+              className="general__barra"
+              role="img"
+              aria-label={`${pctGeneral} por ciento de las gestiones completadas`}
+            >
+              <span style={{ width: `${pctGeneral}%` }} />
+            </div>
+
+            <ul className="general__chips">
+              <li className="general__chip general__chip--ok">{totalHechas} Completadas</li>
+              <li className="general__chip">{totalPendientes} Pendientes</li>
+              <li className="general__chip general__chip--pospuesto">{totalPospuestas} Pospuestas</li>
+              <li className="general__chip general__chip--err">{totalVencidas} Vencidas</li>
+            </ul>
+          </div>
         </section>
       )}
       {estadoCarga === 'exito' && eventos.length === 0 && (
