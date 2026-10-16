@@ -975,7 +975,7 @@ body:has(.login)::after {
   background: linear-gradient(90deg, var(--ok), var(--accent-claro));
   opacity: 0.75;
   transform-origin: left;
-  animation: toast-arena 2.8s linear forwards;
+  animation: toast-arena 4s linear forwards;
 }
 
 @keyframes toast-arena {
@@ -1031,4 +1031,29 @@ body:has(.login)::after {
 
 .segmento--hecho {
   animation: segmento-sube 700ms cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+
+.toast {
+  pointer-events: auto;
+}
+
+.toast__texto {
+  flex: 1;
+}
+
+.toast__cerrar {
+  flex: none;
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.toast__cerrar:hover,
+.toast__cerrar:focus-visible {
+  opacity: 1;
 }

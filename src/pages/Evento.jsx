@@ -16,7 +16,15 @@ const claseSegmento = (g) => {
 export default function Evento() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { obtenerEvento, marcarGestion, guardarNota, eliminarEvento, eliminarGestion } = useEventos()
+  const {
+    obtenerEvento,
+    marcarGestion,
+    guardarNota,
+    eliminarEvento,
+    eliminarGestion,
+    horasDelDia,
+    limiteHoras,
+  } = useEventos()
   const { avisar } = useAvisos()
   const refTitulo = useRef(null)
   const [reprogramando, setReprogramando] = useState(null)
@@ -41,7 +49,21 @@ export default function Evento() {
   const pct = evento.gestiones.length ? Math.round((hechas / evento.gestiones.length) * 100) : 0
   const dias = [...new Set(evento.gestiones.map((g) => g.fecha))].sort()
 
+  // Una gestión que vuelve a pendiente (desde pospuesta o hecha) vuelve a ocupar
+  // tiempo en su día: si ya no cabe, se abre el diálogo para reprogramarla.
+  function sinEspacio(gestion) {
+    const ocupado = horasDelDia(gestion.fecha, gestion.id)
+    if (ocupado + Number(gestion.horas) <= Number(limiteHoras)) return false
+    avisar(
+      `${mayuscula(nombreDia(gestion.fecha))} no tiene espacio para «${gestion.nombre}» ` +
+        `(${formatoHoras(ocupado)} planeadas, límite ${formatoHoras(limiteHoras)}). ` +
+        `Primero debes reprogramarla a otro día o reducir sus horas.`,
+    )
+    return true
+  }
+
   async function alternar(gestion, marcado) {
+    if (!marcado && sinEspacio(gestion)) return
     try {
       await marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
         avisar(marcado ? `Listo: «${gestion.nombre}» quedó como hecha` : `«${gestion.nombre}» volvió a pendiente`,)
@@ -60,6 +82,7 @@ export default function Evento() {
   }
 
   async function reabrir(gestion) {
+    if (sinEspacio(gestion)) return
     try {
       await marcarGestion(gestion.id, 'pendiente')
       avisar(`«${gestion.nombre}» volvió a pendiente`)
