@@ -13,13 +13,16 @@ const claseSegmento = (g) => {
   return clasificar(g) === 'vencido' ? 'segmento--vencido' : ''
 }
 
+// Rango de cada estado en la barra: las hechas primero, así el verde
+// siempre se llena de izquierda a derecha sin importar qué gestión marques.
+const ORDEN_SEGMENTO = { hecho: 0, pospuesto: 1 } // el resto (pendiente/vencida) = 2
+
 export default function Evento() {
   const { id } = useParams()
   const navigate = useNavigate()
   const {
     obtenerEvento,
-    marcarGestion,
-    guardarNota,
+    guardarGestion, // una sola petición con estado y/o nota
     eliminarEvento,
     eliminarGestion,
     horasDelDia,
@@ -30,6 +33,12 @@ export default function Evento() {
   const [reprogramando, setReprogramando] = useState(null)
   const [eliminandoEvento, setEliminandoEvento] = useState(false)
   const [eliminandoGestion, setEliminandoGestion] = useState(null)
+
+  // Cambios sin guardar, por gestión: { [id]: { estado?, nota? } }.
+  // Nada se envía al servidor hasta pulsar "Guardar".
+  const [borradores, setBorradores] = useState({})
+  const [guardando, setGuardando] = useState(null)
+
   const evento = obtenerEvento(id)
 
   if (!evento) {
@@ -49,8 +58,14 @@ export default function Evento() {
   const pct = evento.gestiones.length ? Math.round((hechas / evento.gestiones.length) * 100) : 0
   const dias = [...new Set(evento.gestiones.map((g) => g.fecha))].sort()
 
+  // [...] copia el array para no mutar el estado del contexto.
+  // El sort es estable: dentro de cada grupo se conserva el orden original.
+  const segmentos = [...evento.gestiones].sort(
+    (a, b) => (ORDEN_SEGMENTO[a.estado] ?? 2) - (ORDEN_SEGMENTO[b.estado] ?? 2),
+  )
+
   // Una gestión que vuelve a pendiente (desde pospuesta o hecha) vuelve a ocupar
-  // tiempo en su día: si ya no cabe, se abre el diálogo para reprogramarla.
+  // tiempo en su día: si ya no cabe, se avisa para reprogramarla.
   function sinEspacio(gestion) {
     const ocupado = horasDelDia(gestion.fecha, gestion.id)
     if (ocupado + Number(gestion.horas) <= Number(limiteHoras)) return false
@@ -62,34 +77,68 @@ export default function Evento() {
     return true
   }
 
-  async function alternar(gestion, marcado) {
+  /* ---- borrador local (cero peticiones hasta "Guardar") -------------- */
+
+  // La gestión tal como se ve: datos guardados + cambios del borrador
+  const vista = (g) => ({ ...g, ...borradores[g.id] })
+
+  function editarBorrador(gid, cambios) {
+    setBorradores((prev) => ({ ...prev, [gid]: { ...prev[gid], ...cambios } }))
+  }
+
+  function descartar(gid) {
+    setBorradores((prev) => {
+      const copia = { ...prev }
+      delete copia[gid]
+      return copia
+    })
+  }
+
+  // Check, Posponer y Reabrir ahora SOLO tocan el borrador
+  function alternar(gestion, marcado) {
     if (!marcado && sinEspacio(gestion)) return
-    try {
-      await marcarGestion(gestion.id, marcado ? 'hecho' : 'pendiente')
-        avisar(marcado ? `Listo: «${gestion.nombre}» quedó como hecha` : `«${gestion.nombre}» volvió a pendiente`,)
-    } catch {
-      avisar('No se pudo actualizar la gestión. Intenta de nuevo.')
-    }
+    editarBorrador(gestion.id, { estado: marcado ? 'hecho' : 'pendiente' })
   }
 
-  async function posponer(gestion) {
-    try {
-      await marcarGestion(gestion.id, 'pospuesto')
-      avisar(`Pospusiste «${gestion.nombre}». Deja una nota para recordar por qué.`)
-    } catch {
-      avisar('No se pudo posponer la gestión. Intenta de nuevo.')
-    }
+  function posponer(gestion) {
+    editarBorrador(gestion.id, { estado: 'pospuesto' })
   }
 
-  async function reabrir(gestion) {
+  function reabrir(gestion) {
     if (sinEspacio(gestion)) return
+    editarBorrador(gestion.id, { estado: 'pendiente' })
+  }
+
+  // Una sola petición con todo lo que cambió
+  async function guardar(gestion) {
+    const borrador = borradores[gestion.id]
+    if (!borrador) return
+
+    // Solo se manda lo que realmente difiere de lo guardado
+    const cambios = Object.fromEntries(
+      Object.entries(borrador).filter(([campo, valor]) => valor !== (gestion[campo] ?? '')),
+    )
+    if (Object.keys(cambios).length === 0) return descartar(gestion.id)
+
+    setGuardando(gestion.id)
     try {
-      await marcarGestion(gestion.id, 'pendiente')
-      avisar(`«${gestion.nombre}» volvió a pendiente`)
+      await guardarGestion(gestion.id, cambios)
+      descartar(gestion.id)
+      avisar(
+        cambios.estado === 'hecho' ? `Listo: «${gestion.nombre}» quedó como hecha`
+        : cambios.estado === 'pospuesto' ? `Pospusiste «${gestion.nombre}»`
+        : cambios.estado === 'pendiente' ? `«${gestion.nombre}» volvió a pendiente`
+        : 'Nota guardada',
+      )
     } catch {
-      avisar('No se pudo reabrir la gestión. Intenta de nuevo.')
+      avisar('No se pudo guardar la gestión. Intenta de nuevo.')
+    } finally {
+      setGuardando(null)
     }
   }
+
+  /* ---- eliminar ------------------------------------------------------- */
+
   async function confirmarEliminarEvento() {
     try {
       await eliminarEvento(evento.id)
@@ -101,10 +150,10 @@ export default function Evento() {
     }
   }
 
-
   async function confirmarEliminarGestion() {
     try {
       await eliminarGestion(eliminandoGestion.id)
+      descartar(eliminandoGestion.id)
       avisar(`Se eliminó "${eliminandoGestion.nombre}"`)
       setEliminandoGestion(null)
       requestAnimationFrame(() => refTitulo.current?.focus())
@@ -143,7 +192,7 @@ export default function Evento() {
       </p>
 
       <div className="progreso__barra" role="img" aria-label={`Preparación del evento al ${pct} por ciento`}>
-        {evento.gestiones.map((g) => (
+        {segmentos.map((g) => (
           <span key={g.id} className={`segmento ${claseSegmento(g)}`} />
         ))}
       </div>
@@ -152,7 +201,9 @@ export default function Evento() {
         const delDia = evento.gestiones
           .filter((g) => g.fecha === dia)
           .sort((a, b) => a.hora.localeCompare(b.hora))
-        const horasDia = delDia.filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto').reduce((s, g) => s + Number(g.horas || 0), 0)
+        const horasDia = delDia
+          .filter((g) => g.estado !== 'hecho' && g.estado !== 'pospuesto')
+          .reduce((s, g) => s + Number(g.horas || 0), 0)
 
         return (
           <section key={dia}>
@@ -163,8 +214,10 @@ export default function Evento() {
 
             <ul className="plan">
               {delDia.map((g) => {
-                const hecho = g.estado === 'hecho'
-                const vencida = clasificar(g) === 'vencido'
+                const v = vista(g) // lo que se pinta (guardado + borrador)
+                const hecho = v.estado === 'hecho'
+                const vencida = clasificar(v) === 'vencido'
+                const pendienteGuardar = Boolean(borradores[g.id])
                 return (
                   <li
                     key={g.id}
@@ -183,14 +236,14 @@ export default function Evento() {
                       <span className="num">{g.hora.slice(0, 5)}</span>
                       <i className="evento__punto" />
                       <span className="num">{formatoHoras(g.horas)}</span>
-                      {g.estado === 'pospuesto' && (
+                      {v.estado === 'pospuesto' && (
                         <span className="etiqueta etiqueta--pospuesto">Pospuesta</span>
                       )}
                     </div>
 
                     <div className="gestion__acciones">
                       {!hecho &&
-                        (g.estado === 'pospuesto' ? (
+                        (v.estado === 'pospuesto' ? (
                           <button
                             type="button"
                             className="btn btn--fantasma btn--sm"
@@ -227,28 +280,39 @@ export default function Evento() {
                       </button>
                     </div>
 
-                    {(hecho || g.estado === 'pospuesto') && (
+                    {(hecho || v.estado === 'pospuesto') && (
                       <input
                         className="gestion__nota"
-                        key={`nota-${g.id}`}
-                        defaultValue={g.nota}
+                        value={v.nota ?? ''} // controlado: lee del borrador o de lo guardado
+                        onChange={(e) => editarBorrador(g.id, { nota: e.target.value })}
                         placeholder={
                           hecho
                             ? 'Nota (opcional): ¿quedó algo pendiente?'
                             : 'Nota (opcional): ¿por qué la pospones?'
                         }
                         aria-label={`Nota de ${g.nombre}`}
-                        onBlur={async (e) => {
-                          if (e.target.value !== g.nota) {
-                            try {
-                              await guardarNota(g.id, e.target.value)
-                              avisar('Nota guardada')
-                            } catch {
-                              avisar('No se pudo guardar la nota. Intenta de nuevo.')
-                            }
-                          }
-                        }}
                       />
+                    )}
+
+                    {pendienteGuardar && (
+                      <div className="gestion__guardar">
+                        <button
+                          type="button"
+                          className="btn btn--fantasma btn--sm"
+                          onClick={() => descartar(g.id)}
+                          disabled={guardando === g.id}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn--sm"
+                          onClick={() => guardar(g)}
+                          disabled={guardando === g.id}
+                        >
+                          {guardando === g.id ? 'Guardando…' : 'Guardar'}
+                        </button>
+                      </div>
                     )}
                   </li>
                 )

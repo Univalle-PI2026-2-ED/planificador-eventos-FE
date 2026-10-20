@@ -116,7 +116,8 @@ export function EventosProvider({ children }) {
 
   const obtenerEvento = useCallback(
     (id) => eventos.find((ev) => String(ev.id) === String(id)),
-    [eventos],)
+    [eventos],
+  )
   const obtenerGestion = useCallback((id) => gestiones.find((g) => g.id === id), [gestiones])
 
   /* ---- acciones ------------------------------------------------------ */
@@ -248,7 +249,23 @@ export function EventosProvider({ children }) {
     [cambiarGestion],
   )
 
-  
+  // Guarda estado y/o nota de una gestión en UNA sola petición (PATCH).
+  // Antes: marcarGestion + guardarNota = 2 peticiones por gestión.
+  const guardarGestion = useCallback(
+    async (gestionId, cambios) => {
+      const g = gestiones.find((x) => x.id === gestionId)
+      await editarGestionApi(gestionId, cambios)
+      cambiarGestion(gestionId, cambios)
+      // la bitácora solo se anota si cambió el estado
+      if (g && cambios.estado) {
+        if (cambios.estado === 'hecho') anotar('Marcaste como hecha', g.nombre)
+        else if (cambios.estado === 'pospuesto') anotar('Pospusiste', g.nombre)
+        else anotar('Reabriste', g.nombre)
+      }
+    },
+    [anotar, cambiarGestion, gestiones],
+  )
+
   const reprogramarGestion = useCallback(
     async (gestionId, { fecha, horas }) => {
       const cambios = { fecha, estado: 'pendiente' }
@@ -293,6 +310,7 @@ export function EventosProvider({ children }) {
       eliminarGestion,
       marcarGestion,
       guardarNota,
+      guardarGestion,
       reprogramarGestion,
       posponerGestion,
       guardarLimiteHoras,
@@ -302,7 +320,7 @@ export function EventosProvider({ children }) {
       estadoCarga, cargar, bitacora, anotar,
       gestionesDelDia, horasDelDia, obtenerEvento, obtenerGestion, nombreDuplicado,
       agregarEvento, editarEvento, editarGestion, agregarGestion, eliminarEvento, eliminarGestion,
-      marcarGestion, guardarNota, reprogramarGestion, posponerGestion,
+      marcarGestion, guardarNota, guardarGestion, reprogramarGestion, posponerGestion,
     ],
   )
 

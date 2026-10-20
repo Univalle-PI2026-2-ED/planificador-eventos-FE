@@ -509,3 +509,12 @@
 .dialogo {
   box-shadow: var(--sombra), inset 0 2px 0 var(--accent);
 }
+
+/* Barra Guardar/Cancelar: aparece solo cuando hay cambios sin enviar */
+.gestion__guardar {
+  grid-column: 2 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
