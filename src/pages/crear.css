@@ -334,3 +334,31 @@
   color: var(--accent-claro);
   font-weight: 600;
 }
+
+/* Selectores de fecha y hora propios dentro de cada gestión:
+   mismo tamaño y borde que el resto de campos de la fila */
+.subtarea .selector-fecha__campo {
+  padding: 8px 10px;
+  font-size: 14px;
+  border-color: var(--line);
+  border-radius: 8px;
+}
+
+.subtarea .selector-fecha__campo:hover {
+  border-color: var(--line-fuerte);
+}
+
+.subtarea .selector-fecha__campo[aria-expanded="true"] {
+  border-color: var(--accent);
+}
+
+.subtarea .selector-fecha__icono {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 380px) {
+  .subtarea__datos > .selector-fecha:first-child {
+    grid-column: 1 / -1;
+  }
+}

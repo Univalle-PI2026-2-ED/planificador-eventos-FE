@@ -1,0 +1,78 @@
+/* ==========================================================================
+   SelectorHora — selector de hora propio con la estética de Chronos.
+   Reutiliza el campo, el panel y el pie de selectorfecha.css.
+   ========================================================================== */
+.selector-hora__panel {
+  width: 236px;
+}
+
+.selector-hora__columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr;
+  gap: 6px;
+}
+
+.selector-hora__grupo {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.selector-hora__grupo .selector-fecha__semana {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selector-hora__columna {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  height: 212px;
+  padding: 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-fuerte) transparent;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.selector-hora__opcion {
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), color var(--t);
+}
+
+.selector-hora__opcion:hover {
+  background: var(--paper-2);
+  border-color: var(--line-fuerte);
+}
+
+.selector-hora__opcion:focus-visible {
+  outline: 2px solid var(--accent-claro);
+  outline-offset: -1px;
+}
+
+/* Valor elegido: relleno dorado, igual que el día elegido del calendario */
+.selector-hora__opcion--elegida,
+.selector-hora__opcion--elegida:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.selector-hora__vista {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-claro);
+}

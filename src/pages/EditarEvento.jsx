@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEventos, useAvisos } from '../context/contextos.js'
 import { formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
 import DialogoReprogramar from '../components/DialogoReprogramar.jsx'
+import SelectorFecha from '../components/SelectorFecha.jsx'
+import SelectorHora from '../components/SelectorHora.jsx'
 import './crear.css'
 import './evento.css'
 
@@ -249,7 +251,7 @@ export default function EditarEvento() {
           <div className="fila-campos">
             <div className="campo">
               <label className="campo__label" htmlFor="f-fecha">Fecha del evento</label>
-              <input id="f-fecha" type="date" value={fecha} aria-invalid={errores.fecha ? 'true' : undefined} onChange={(e) => setFecha(e.target.value)} />
+              <SelectorFecha id="f-fecha" value={fecha} invalido={Boolean(errores.fecha)} onChange={(nueva) => setFecha(nueva)} />
               {errores.fecha && <p className="campo__error">{errores.fecha}</p>}
             </div>
             
@@ -289,17 +291,15 @@ export default function EditarEvento() {
                   ×
                 </button>
                 <div className="subtarea__datos">
-                  <input
-                    type="date"
-                    aria-label={`Día de la gestión ${i + 1}`}
+                  <SelectorFecha
+                    etiqueta={`Día de la gestión ${i + 1}`}
                     value={g.fecha}
-                    onChange={(e) => actualizar(g.k, 'fecha', e.target.value)}
+                    onChange={(nueva) => actualizar(g.k, 'fecha', nueva)}
                   />
-                  <input
-                    type="time"
-                    aria-label={`Hora de la gestión ${i + 1}`}
+                  <SelectorHora
+                    etiqueta={`Hora de la gestión ${i + 1}`}
                     value={g.hora}
-                    onChange={(e) => actualizar(g.k, 'hora', e.target.value)}
+                    onChange={(nueva) => actualizar(g.k, 'hora', nueva)}
                   />
                   <input
                     type="number"

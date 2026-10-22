@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEventos, useAvisos } from '../context/contextos.js'
 import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
 import SelectorFecha from '../components/SelectorFecha.jsx'
+import SelectorHora from '../components/SelectorHora.jsx'
 import './crear.css'
 
 const gestionVacia = (k) => ({ k, nombre: '', fecha: hoyISO(), hora: '09:00', horas: 1 })
@@ -189,20 +190,18 @@ export default function Crear() {
                 <div className="subtarea__datos">
                   <div className="subcampo">
                     <label className="campo__label" htmlFor={`g-fecha-${g.k}`}>Día</label>
-                    <input
+                    <SelectorFecha
                       id={`g-fecha-${g.k}`}
-                      type="date"
                       value={g.fecha}
-                      onChange={(e) => actualizar(g.k, 'fecha', e.target.value)}
+                      onChange={(nueva) => actualizar(g.k, 'fecha', nueva)}
                     />
                   </div>
                   <div className="subcampo">
                     <label className="campo__label" htmlFor={`g-hora-${g.k}`}>Hora</label>
-                    <input
+                    <SelectorHora
                       id={`g-hora-${g.k}`}
-                      type="time"
                       value={g.hora}
-                      onChange={(e) => actualizar(g.k, 'hora', e.target.value)}
+                      onChange={(nueva) => actualizar(g.k, 'hora', nueva)}
                     />
                   </div>
                   <div className="subcampo">

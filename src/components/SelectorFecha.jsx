@@ -43,6 +43,7 @@ export default function SelectorFecha({
   onChange,
   min,
   placeholder = 'Elige una fecha',
+  etiqueta,
   invalido = false,
   describedBy,
 }) {
@@ -122,6 +123,7 @@ export default function SelectorFecha({
         aria-expanded={abierto}
         aria-invalid={invalido ? 'true' : undefined}
         aria-describedby={describedBy}
+        aria-label={etiqueta ? `${etiqueta}, ${value ? formatoCorto(value) : placeholder}` : undefined}
         onClick={() => (abierto ? cerrar() : abrir())}
       >
         <span className={value ? '' : 'selector-fecha__placeholder'}>
@@ -141,6 +143,7 @@ export default function SelectorFecha({
           aria-label="Elegir fecha"
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
+              e.preventDefault()
               e.stopPropagation()
               cerrar()
             }
