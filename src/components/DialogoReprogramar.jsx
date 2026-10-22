@@ -6,6 +6,7 @@ import {
   nombreDia,
   sumarDias,
 } from '../lib/fechas.js'
+import SelectorFecha from './SelectorFecha.jsx'
 
 export default function DialogoReprogramar({ gestion, onCerrar, onReprogramada }) {
   const ref = useRef(null)
@@ -225,14 +226,12 @@ export default function DialogoReprogramar({ gestion, onCerrar, onReprogramada }
             Nueva fecha
           </label>
 
-          <input
+          <SelectorFecha
             id="destino"
-            type="date"
-            min={hoyISO()}
             value={destino}
-            onChange={(e) => {
-              if (!e.target.value) return
-              setDestino(e.target.value)
+            onChange={(nueva) => {
+              if (!nueva) return
+              setDestino(nueva)
               setOpcion('')
             }}
           />
