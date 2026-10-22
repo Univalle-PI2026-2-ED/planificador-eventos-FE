@@ -518,3 +518,55 @@
   gap: 8px;
   margin-top: 8px;
 }
+
+/* ==========================================================================
+   Sprint 5 — botones del evento vs. botones de cada gestión
+   ========================================================================== */
+
+/* Acciones del evento: recuadro propio, botones grandes */
+.detalle__acciones {
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper-2);
+}
+
+.detalle__acciones-titulo {
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.detalle__acciones .btn--evento {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.detalle__acciones .btn--fantasma.btn--evento {
+  border-color: var(--accent);
+  color: var(--accent-claro);
+}
+
+.detalle__acciones .btn--fantasma.btn--evento:hover {
+  background: var(--accent-bg);
+}
+
+/* Acciones de cada gestión: pequeñas y discretas */
+.gestion__acciones .btn--gestion {
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+.gestion__acciones .btn--gestion-eliminar {
+  border-color: transparent;
+}
+
+.gestion__acciones .btn--gestion-eliminar:hover {
+  border-color: var(--err-line);
+}

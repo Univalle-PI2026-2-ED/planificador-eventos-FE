@@ -148,8 +148,21 @@ export default function Hoy() {
         </section>
       )}
 
-      {estado === 'exito' && (
+            {estado === 'exito' && (
         <>
+          <section className="regla-visible" aria-labelledby="regla-titulo">
+            <h2 id="regla-titulo" className="regla-visible__titulo">Así se ordena tu día</h2>
+            <ol className="regla-visible__pasos">
+              <li><span><strong>Vencidas</strong>, la más antigua primero</span></li>
+              <li><span><strong>Para hoy</strong></span></li>
+              <li><span><strong>Próximas</strong>, por fecha más cercana</span></li>
+            </ol>
+            <p className="regla-visible__nota">
+              Si coinciden en fecha, va primero la que menos horas toma. Las pospuestas y las hechas
+              van al final y no suman a la carga del día.
+            </p>
+          </section>
+
           <div className={'carga' + (excedida ? ' carga--excedida' : '')}>
             <div className="carga__datos">
               <span>Carga del día</span>
@@ -234,15 +247,7 @@ export default function Hoy() {
           <Grupo titulo="Pospuestas" items={pospuestas} />
           <Grupo titulo="Completadas" items={hechas} />
 
-          <details className="reglas">
-            <summary>¿Cómo se ordena esto?</summary>
-            <ul>
-              <li>Primero van las <strong>vencidas</strong>, con la más antigua arriba.</li>
-              <li>Después las de <strong>hoy</strong> y luego las <strong>próximas</strong>, por fecha más cercana.</li>
-              <li>Si coinciden en fecha, va primero la que <strong>menos horas</strong> toma.</li>
-              <li>Las pospuestas y las hechas van al final y no cuentan como urgentes ni suman a la carga del día.</li>
-            </ul>
-          </details>
+          
         </>
       )}
     </div>

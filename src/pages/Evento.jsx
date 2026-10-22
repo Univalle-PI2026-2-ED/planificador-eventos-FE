@@ -167,13 +167,14 @@ export default function Evento() {
       <Link to="/hoy" className="volver">Volver a hoy</Link>
       <div className="detalle__header">
         <h1 ref={refTitulo} tabIndex={-1}>{evento.nombre}</h1>
-        <div className="detalle__acciones">
-          <Link to={`/evento/${evento.id}/editar`} className="btn btn--fantasma btn--sm">
+        <div className="detalle__acciones" role="group" aria-label="Acciones del evento">
+          <span className="detalle__acciones-titulo" aria-hidden="true">Acciones del evento</span>
+          <Link to={`/evento/${evento.id}/editar`} className="btn btn--fantasma btn--evento">
             Editar evento
           </Link>
           <button
             type="button"
-            className="btn btn--peligro btn--sm"
+            className="btn btn--peligro btn--evento"
             onClick={() => setEliminandoEvento(true)}
           >
             Eliminar evento
@@ -241,12 +242,12 @@ export default function Evento() {
                       )}
                     </div>
 
-                    <div className="gestion__acciones">
+                                        <div className="gestion__acciones">
                       {!hecho &&
                         (v.estado === 'pospuesto' ? (
                           <button
                             type="button"
-                            className="btn btn--fantasma btn--sm"
+                            className="btn btn--fantasma btn--gestion"
                             onClick={() => reabrir(g)}
                             aria-label={`Reabrir ${g.nombre}`}
                           >
@@ -255,7 +256,7 @@ export default function Evento() {
                         ) : (
                           <button
                             type="button"
-                            className="btn btn--fantasma btn--sm"
+                            className="btn btn--fantasma btn--gestion"
                             onClick={() => posponer(g)}
                             aria-label={`Posponer ${g.nombre}`}
                           >
@@ -264,7 +265,7 @@ export default function Evento() {
                         ))}
                       <button
                         type="button"
-                        className="btn btn--fantasma btn--sm"
+                        className="btn btn--fantasma btn--gestion"
                         onClick={() => setReprogramando(g)}
                         aria-label={`Reprogramar ${g.nombre}`}
                       >
@@ -272,7 +273,7 @@ export default function Evento() {
                       </button>
                       <button
                         type="button"
-                        className="btn btn--peligro btn--sm"
+                        className="btn btn--peligro btn--gestion btn--gestion-eliminar"
                         onClick={() => setEliminandoGestion(g)}
                         aria-label={`Eliminar ${g.nombre}`}
                       >

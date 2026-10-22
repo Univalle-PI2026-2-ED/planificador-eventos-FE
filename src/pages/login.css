@@ -420,3 +420,44 @@
   font-size: 13.5px;
   color: var(--ink-2);
 }
+
+/* ==========================================================================
+   Sprint 5 — "Crear cuenta" visible y separada de "Iniciar sesión"
+   ========================================================================== */
+.login__registro {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* Texto con una línea a cada lado: ——— ¿Primera vez en Chronos? ——— */
+.login__separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.login__separador::before,
+.login__separador::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* Botón con borde dorado: se ve, pero no compite con "Iniciar sesión" */
+.login__crear.btn--fantasma {
+  padding: 12px 16px;
+  border-color: var(--accent-line);
+  color: var(--accent-claro);
+  font-size: 15px;
+}
+
+.login__crear.btn--fantasma:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}

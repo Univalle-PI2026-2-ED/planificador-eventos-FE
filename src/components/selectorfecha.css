@@ -1,0 +1,250 @@
+/* ==========================================================================
+   SelectorFecha — calendario propio con la estética de Chronos
+   ========================================================================== */
+.selector-fecha {
+  position: relative;
+}
+
+/* El "campo" es un botón que se ve igual que los inputs del formulario */
+.selector-fecha__campo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--line-fuerte);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--t), background var(--t);
+}
+
+.selector-fecha__campo:hover {
+  border-color: var(--accent-line);
+}
+
+.selector-fecha__campo[aria-expanded="true"] {
+  border-color: var(--accent);
+}
+
+.selector-fecha__campo--error {
+  border-color: var(--err);
+}
+
+.selector-fecha__placeholder {
+  color: var(--ink-3);
+}
+
+.selector-fecha__icono {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* Panel flotante */
+.selector-fecha__panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 296px;
+  padding: 14px;
+  border: 1px solid var(--line-fuerte);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--paper-2), var(--paper-dim));
+  box-shadow: var(--sombra);
+  animation: selector-fecha-entra 160ms ease-out;
+}
+
+@keyframes selector-fecha-entra {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selector-fecha__panel {
+    animation: none;
+  }
+}
+
+.selector-fecha__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.selector-fecha__mes {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.selector-fecha__nav {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--t), color var(--t);
+}
+
+.selector-fecha__nav:hover {
+  border-color: var(--accent-line);
+  color: var(--accent-claro);
+}
+
+.selector-fecha__grilla {
+  display: grid;
+  gap: 2px;
+}
+
+.selector-fecha__fila {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.selector-fecha__semana {
+  padding: 4px 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--ink-3);
+}
+
+.selector-fecha__fila > span {
+  display: grid;
+}
+
+.selector-fecha__dia {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), color var(--t);
+}
+
+.selector-fecha__dia:hover:not(:disabled) {
+  background: var(--paper);
+  border-color: var(--line-fuerte);
+}
+
+.selector-fecha__dia:focus-visible {
+  outline: 2px solid var(--accent-claro);
+  outline-offset: 1px;
+}
+
+.selector-fecha__dia--fuera {
+  color: var(--ink-3);
+}
+
+/* Días bloqueados (anteriores a hoy al crear un evento) */
+.selector-fecha__dia:disabled {
+  color: var(--ink-3);
+  opacity: 0.35;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+/* Hoy: anillo dorado y puntito debajo */
+.selector-fecha__dia--hoy {
+  position: relative;
+  border-color: var(--accent);
+  color: var(--accent-claro);
+  font-weight: 700;
+}
+
+.selector-fecha__dia--hoy::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-claro);
+  translate: -50% 0;
+}
+
+/* Día elegido: relleno dorado */
+.selector-fecha__dia--elegido,
+.selector-fecha__dia--elegido:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.selector-fecha__dia--elegido::after {
+  background: var(--accent-ink);
+}
+
+.selector-fecha__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.selector-fecha__leyenda {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.selector-fecha__punto {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+}
+
+.selector-fecha__hoy {
+  padding: 6px 12px;
+  border: 1px solid var(--accent-line);
+  border-radius: 8px;
+  background: none;
+  color: var(--accent-claro);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t);
+}
+
+.selector-fecha__hoy:hover:not(:disabled) {
+  background: var(--accent-bg);
+}
+
+.selector-fecha__hoy:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

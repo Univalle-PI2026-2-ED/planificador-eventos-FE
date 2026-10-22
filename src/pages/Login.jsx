@@ -60,9 +60,9 @@ export default function Login() {
 
       <main className="login__main">
         <div className="login__caja">
-          <h1 className="login__title">Entra a tu día</h1>
+          <h1 className="login__title">Inicio de sesión</h1>
           <p className="login__intro">
-            Organiza los eventos que produces y las gestiones de cada uno.
+            Entra con tu correo para organizar tus eventos y las gestiones de cada uno.
           </p>
 
           {registrado && (
@@ -89,7 +89,7 @@ export default function Login() {
 
             <div className={'campo' + (errores.clave ? ' campo--error' : '')}>
               <label className="campo__label" htmlFor="clave">Contraseña</label>
-               <InputClave
+              <InputClave
                 id="clave"
                 autoComplete="current-password"
                 value={clave}
@@ -109,10 +109,10 @@ export default function Login() {
               {enviando ? (
                 <>
                   <span className="reloj-espera" aria-hidden="true" />
-                  Entrando…
+                  Iniciando sesión…
                 </>
               ) : (
-                'Entrar'
+                'Iniciar sesión'
               )}
             </button>
 
@@ -123,9 +123,12 @@ export default function Login() {
             )}
           </form>
 
-          <p className="login__pie">
-            ¿No tienes cuenta? <Link to="/registro">Crea una</Link>
-          </p>
+          <section className="login__registro" aria-labelledby="registro-titulo">
+            <p className="login__separador" id="registro-titulo">¿Primera vez en Chronos?</p>
+            <Link to="/registro" className="btn btn--fantasma btn--full login__crear">
+              Crear cuenta
+            </Link>
+          </section>
         </div>
       </main>
     </div>

@@ -294,3 +294,43 @@
     grid-row: 2;
   }
 }
+
+
+/* Sprint 5 — labels visibles en los campos de cada gestión */
+.subcampo {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  align-content: start;
+}
+
+.subtarea__datos {
+  align-items: start;
+}
+
+.subtarea__quitar {
+  align-self: end;
+  margin-bottom: 4px;
+}
+
+/* Ayuda de la duración: ocupa todo el ancho de la gestión */
+.subtarea__ayuda {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+@media (max-width: 380px) {
+  .subtarea__datos .subcampo:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Sprint 5 — el día de hoy, visible junto a la fecha del evento */
+.campo__hoy {
+  margin: 0;
+}
+
+.campo__hoy strong {
+  color: var(--accent-claro);
+  font-weight: 600;
+}
