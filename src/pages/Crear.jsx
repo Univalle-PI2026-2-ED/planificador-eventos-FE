@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEventos, useAvisos } from '../context/contextos.js'
-import { formatoHoras, hoyISO, mayuscula, nombreDia, sumarDias } from '../lib/fechas.js'
+import { fechaLarga, formatoHoras, hoyISO, mayuscula, nombreDia } from '../lib/fechas.js'
+import SelectorFecha from '../components/SelectorFecha.jsx'
 import './crear.css'
 
 const gestionVacia = (k) => ({ k, nombre: '', fecha: hoyISO(), hora: '09:00', horas: 1 })
@@ -15,7 +16,7 @@ export default function Crear() {
   const refsNombreGestion = useRef({})
   const refAgregar = useRef(null)
   const [nombre, setNombre] = useState('')
-  const [fecha, setFecha] = useState(sumarDias(hoyISO(), 7))
+  const [fecha, setFecha] = useState('') // sin fecha elegida hasta que la persona escoja una
   const [plan, setPlan] = useState([])
   const [siguienteK, setSiguienteK] = useState(1)
   const [errores, setErrores] = useState({})
@@ -44,7 +45,7 @@ export default function Crear() {
     return acc
   }, {})
   const sobrecargados = Object.entries(porDia).filter(([, h]) => h > Number(limiteHoras))
-  const horasInvalidas = (h) =>   
+  const horasInvalidas = (h) =>
     h === '' || Number(h) <= 0 || Number(h) > Number(limiteHoras)
 
   function validarNombreEnTiempoReal(texto) {
@@ -65,6 +66,7 @@ export default function Crear() {
       nuevos.nombre = 'Ya existe un evento con ese nombre. Usa uno distinto para diferenciarlos.'
     }
     if (!fecha) nuevos.fecha = 'Elige la fecha del evento.'
+    else if (fecha < hoyISO()) nuevos.fecha = 'La fecha del evento no puede ser anterior a hoy.'
     if (plan.length === 0) nuevos.plan = 'Añade al menos una gestión al plan.'
     else if (plan.some((g) => !g.nombre.trim() || !g.hora || !g.fecha)) {
       nuevos.plan = 'Cada gestión necesita un nombre, un día y una hora.'
@@ -94,7 +96,7 @@ export default function Crear() {
       }
     } finally {
       setGuardando(false)
-    }   
+    }
   }
 
   return (
@@ -131,8 +133,21 @@ export default function Crear() {
           <div className="fila-campos">
             <div className="campo">
               <label className="campo__label" htmlFor="f-fecha">Fecha del evento</label>
-              <input id="f-fecha" type="date" value={fecha} aria-invalid={errores.fecha ? 'true' : undefined} onChange={(e) => setFecha(e.target.value)} />
-              {errores.fecha && <p className="campo__error">{errores.fecha}</p>}
+              <SelectorFecha
+                id="f-fecha"
+                value={fecha}
+                min={hoyISO()}
+                invalido={Boolean(errores.fecha)}
+                describedBy={errores.fecha ? 'ayuda-fecha err-fecha' : 'ayuda-fecha'}
+                onChange={(nueva) => {
+                  setFecha(nueva)
+                  setErrores((prev) => ({ ...prev, fecha: '' }))
+                }}
+              />
+              <p className="campo__ayuda campo__hoy" id="ayuda-fecha">
+                Hoy es <strong>{fechaLarga(hoyISO())}</strong>. No se pueden elegir días anteriores.
+              </p>
+              {errores.fecha && <p className="campo__error" id="err-fecha">{errores.fecha}</p>}
             </div>
           </div>
         </section>
@@ -149,15 +164,20 @@ export default function Crear() {
 
           <ul className="subtareas">
             {plan.map((g, i) => (
-              <li className="subtarea" key={g.k}>
-                <input
-                  className="subtarea__nombre"
-                  ref={(el) => (refsNombreGestion.current[g.k] = el)}
-                  aria-label={`Nombre de la gestión ${i + 1}`}
-                  value={g.nombre}
-                  onChange={(e) => actualizar(g.k, 'nombre', e.target.value)}
-                  placeholder="Ej. Confirmar catering"
-                />
+              <li className="subtarea" key={g.k} role="group" aria-label={`Gestión ${i + 1}`}>
+                <div className="subcampo">
+                  <label className="campo__label" htmlFor={`g-nombre-${g.k}`}>
+                    Nombre de la gestión {i + 1}
+                  </label>
+                  <input
+                    id={`g-nombre-${g.k}`}
+                    className="subtarea__nombre"
+                    ref={(el) => (refsNombreGestion.current[g.k] = el)}
+                    value={g.nombre}
+                    onChange={(e) => actualizar(g.k, 'nombre', e.target.value)}
+                    placeholder="Ej. Confirmar catering"
+                  />
+                </div>
                 <button
                   type="button"
                   className="subtarea__quitar"
@@ -167,35 +187,47 @@ export default function Crear() {
                   ×
                 </button>
                 <div className="subtarea__datos">
-                  <input
-                    type="date"
-                    aria-label={`Día de la gestión ${i + 1}`}
-                    value={g.fecha}
-                    onChange={(e) => actualizar(g.k, 'fecha', e.target.value)}
-                  />
-                  <input
-                    type="time"
-                    aria-label={`Hora de la gestión ${i + 1}`}
-                    value={g.hora}
-                    onChange={(e) => actualizar(g.k, 'hora', e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    min="0.5"
-                    max={limiteHoras}
-                    step="0.5"
-                    aria-label={`Horas estimadas de la gestión ${i + 1}`}
-                    aria-invalid={horasInvalidas(g.horas) ? 'true' : undefined}
-                    aria-describedby={horasInvalidas(g.horas) ? `err-horas-${g.k}` : undefined}
-                    value={g.horas}
-                    onKeyDown={(e) => {
-                      if (['-', '+', 'e', 'E'].includes(e.key)) {
-                        e.preventDefault()
+                  <div className="subcampo">
+                    <label className="campo__label" htmlFor={`g-fecha-${g.k}`}>Día</label>
+                    <input
+                      id={`g-fecha-${g.k}`}
+                      type="date"
+                      value={g.fecha}
+                      onChange={(e) => actualizar(g.k, 'fecha', e.target.value)}
+                    />
+                  </div>
+                  <div className="subcampo">
+                    <label className="campo__label" htmlFor={`g-hora-${g.k}`}>Hora</label>
+                    <input
+                      id={`g-hora-${g.k}`}
+                      type="time"
+                      value={g.hora}
+                      onChange={(e) => actualizar(g.k, 'hora', e.target.value)}
+                    />
+                  </div>
+                  <div className="subcampo">
+                    <label className="campo__label" htmlFor={`g-horas-${g.k}`}>Duración (horas)</label>
+                    <input
+                      id={`g-horas-${g.k}`}
+                      type="number"
+                      min="0.5"
+                      max={limiteHoras}
+                      step="0.5"
+                      aria-invalid={horasInvalidas(g.horas) ? 'true' : undefined}
+                      aria-describedby={
+                        horasInvalidas(g.horas) ? `ayuda-horas-${g.k} err-horas-${g.k}` : `ayuda-horas-${g.k}`
                       }
-                    }}
-                    onChange={(e) => actualizar(g.k, 'horas', e.target.value > 0 ? e.target.value : '')}
-                  />
+                      value={g.horas}
+                      onKeyDown={(e) => {
+                        if (['-', '+', 'e', 'E'].includes(e.key)) e.preventDefault()
+                      }}
+                      onChange={(e) => actualizar(g.k, 'horas', e.target.value > 0 ? e.target.value : '')}
+                    />
+                  </div>
                 </div>
+                <p className="campo__ayuda subtarea__ayuda" id={`ayuda-horas-${g.k}`}>
+                  Duración: usa las flechas o escribe el número. Sube de media en media hora (1, 1.5, 2…).
+                </p>
                 {horasInvalidas(g.horas) && (
                   <p className="subtarea__error-texto" id={`err-horas-${g.k}`}>
                     {Number(g.horas) > Number(limiteHoras)

@@ -813,3 +813,107 @@
   translate: -100% 0;
   animation: barra-luz 4.5s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   Sprint 5 — regla de prioridad visible arriba de "Tu día"
+   Misma tarjeta que "Carga del día"; los pasos van como pastillas.
+   ========================================================================== */
+.regla-visible {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--paper-2), var(--paper-dim));
+  box-shadow: var(--sombra-suave);
+}
+
+.regla-visible__titulo {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.regla-visible__pasos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.regla-visible__pasos li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 13px;
+  color: var(--ink-2);
+  counter-increment: paso;
+}
+
+/* Número del paso en un circulito dorado */
+.regla-visible__pasos li::before {
+  content: counter(paso);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent-claro);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.regla-visible__pasos li strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.regla-visible__pasos li {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  counter-increment: paso;
+}
+
+/* Espacio para la flecha entre una pastilla y la siguiente */
+.regla-visible__pasos li:not(:last-child) {
+  margin-right: 22px;
+}
+
+/* Flecha entre pasos: va afuera de la pastilla, centrada en el hueco */
+.regla-visible__pasos li:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  right: -19px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.regla-visible__nota {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
